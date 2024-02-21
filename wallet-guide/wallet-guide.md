@@ -1,3 +1,5 @@
+![IN2, Ingeniería de la Información](../assets/images/in2-logo.png)
+
 # Wallet Guide
 
 Wallet Guide is a documentation which implements all the needed info to implement our wallet as a solution.
