@@ -1,12 +1,50 @@
 ![IN2, Ingeniería de la Información](../assets/images/in2-logo.png)
 
-# Desmos Guide
+<html lang="en">
+  <head>
+    <!-- Style for the header, you can add your own CSS file or style tag here -->
+    <title>desmos-guide-draft-1</title>
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-content">
+        <h1>Desmos Guide - Draft 1</h1>
+        <table>
+          <tr>
+            <th>Workgroup:</th>
+            <td>dome</td>
+          </tr>
+          <tr>
+            <th>Published:</th>
+            <td>21 February 2024</td>
+          </tr>
+          <tr>
+            <th>Editor:</th>
+            <td>
+              <a href="mailto:oriol.canades@in2.es">Oriol Canadés</a>
+            </td>
+          </tr>
+          <tr>
+            <th>Authors:</th>
+            <td>
+              <a href="mailto:in2kizuna@gmail.com">IN2 Kizuna DevTeam</a>
+            </td>
+          </tr>
+          <!-- Add more rows as needed -->
+        </table>
+      </div>
+    </div>
+  </body>
+</html>
+
+# Abstract
 
 Desmos Guide is a documentation which implements all the needed info to implement our Desmos component as a solution.
 
-## Table of Contents
+# Table of Contents
 <!-- TOC -->
-- [Desmos Guide](#desmos-guide)
+
+- [Abstract](#abstract)
   - [Table of Contents](#table-of-contents)
   - [Introduction](#introduction)
   - [Prerequisites](#prerequisites)
@@ -17,17 +55,17 @@ Desmos Guide is a documentation which implements all the needed info to implemen
   - [Troubleshooting](#troubleshooting)
 <!-- /TOC -->
 
-## Introduction
+# Introduction
 
 DESMOS serves as a crucial component within the Access Node architecture, facilitating interaction between off-chain storage and on-chain storage. This RESTful API exposes a set of endpoints designed for seamless communication between the Context Broker and Blockchain.
 
-## Prerequisites
+# Prerequisites
 
 Docker: Users will need Docker installed on their system to build and run containerized applications. Docker Compose will be used for defining and running multi-container Docker applications. Users can download Docker from the official Docker website.
 
-## Installation
+# Installation
 
-### Docker Compose Setup
+## Docker Compose Setup
 
 To install both the component and its dependencies, it will be necessary to compose at least the containers for these components. Additionally, this guide will cover all the environment variables that make up these components to enable their configuration.
 
@@ -115,7 +153,7 @@ NGSI_SUBSCRIPTION_ENTITY_TYPES: Lists  the  entity  types  for NGSI subscription
 
 The  Context  Broker  component, we  will use Scorpio.
 
-## Running the Component
+# Running the Component
 
 To deploy the Blockchain Connector along with its dependencies detailed in the Docker Compose configuration, execute the command:
 
@@ -125,7 +163,7 @@ docker-compose up -d
 
 This command runs the containers in detached mode, allowing the containers to run in the background.
 
-## DESMOS Marketplace: How to Publish New Services
+# DESMOS Marketplace: How to Publish New Services
 
 
 DESMOS employs  an  initialization  process  for  the  marketplace  that  retrieves  entities  every time it  starts. This  means  that  even  when  the  processing  queue  is  blocked, users can still  publish  their  services  to  the  component  while  it  is  initializing. Once the  queue  is  unblocked, these  services  will be processed  accordingly.
@@ -164,7 +202,7 @@ Here is  an  example  format  for  persisting  entities:
 }
 ```
 
-## Troubleshooting
+# Troubleshooting
 
 Finally, it's  important  to note that in the  event  of  an  unexpected shutdown or error in DESMOS, the  system  is  designed  for  resilience. Upon  restart, DESMOS will  automatically  recover  all  entities  that  may  have  been  pending in the  shared catalogue or  within  the  user's  context  broker. This  feature  ensures  that no data is  lost and that  the  marketplace can continue to  operate  smoothly, even after unforeseen  disruptions.
 
