@@ -73,10 +73,18 @@ Our Wallet solution implements two principal components that can be integrated w
 ![Wallet Overview](./assets/wallet-solution-context.png)
 
 For now, we only support the following components:
-* IAM (Identity and Access Management): Keycloak
-* Context Broker: Orion-LD, Scorpio, and any other NGSI-LD compliant context broker.
-* Vault: HashiCorp Vault and Azure Key Vault
-* Application Configuration: YAML and Azure App Configuration.
+* **IAM (Identity and Access Management)** 
+  * Keycloak
+* **Context Broker**
+  * Orion-LD 
+  * Scorpio 
+  * Other NGSI-LD compliant context broker
+* **Vault**
+  * HashiCorp Vault
+  * Azure Key Vault
+* **Application Configuration**
+  * YAML
+  * Azure App Configuration
 
 ## Wallet API
 
@@ -97,6 +105,15 @@ This section will provide an overview of the wallet testing and its components.
 ## Wallet Deployment
 
 This section will provide an overview of the wallet deployment and its components.
+
+### Docker Deployment
+
+We have an IaC (Infrastructure as Code) repository that contains the necessary files to deploy the wallet solution using Docker. The repository is located at the following URL: https://github.com/in2workspace/in2-dome-iac/blob/main/wallet/test/README.md
+
+### Kubernetes Deployment
+
+We are currently working on a Kubernetes deployment guide for the wallet solution. You can check our Helm repository at the following URL: https://in2workspace.github.io/helm-charts/
+
 
 ## Wallet Maintenance
 
