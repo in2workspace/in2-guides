@@ -1,12 +1,14 @@
 ---
 layout: page
-title: "Blockchain Connector"
+title: "Desmos: Blockchain Connector Technical Document"
 date: 2023-03-26
 version: v1.0.0
 author: "Oriol Canadés"
 ---
 
-<h1>Desmos: Blockchain Connector — <i>Draft 1</i></h1>
+![IN2, Ingeniería de la Información](../assets/images/in2-logo.png)
+
+<h1>Desmos: Blockchain Connector Technical Document— <i>Draft 1</i></h1>
 
 <h2>Table of Contents</h2>
 <!-- TOC -->
