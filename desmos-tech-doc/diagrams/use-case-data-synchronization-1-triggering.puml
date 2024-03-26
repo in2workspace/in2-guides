@@ -1,0 +1,39 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+skinparam BoxPadding 10
+
+' -------------------- Headers -------------------- '
+
+actor "Operator" as operator
+
+box "Local Access Node" #LightBlue
+    control "DataSyncController" as data_sync_controller
+    control "Scheduler" as scheduler
+    control "Bootstrapping" as bootstrapping
+    participant "DataSyncService" as data_sync_service
+end box
+
+' -------------------- Diagram -------------------- '
+
+note over operator, data_sync_service
+    Trigger data sync
+end note
+
+alt "Bootstrapping"
+    bootstrapping -> bootstrapping++: Application starts/restarts
+    bootstrapping -> data_sync_service++: SyncData()
+else "Scheduler"
+    scheduler -> scheduler++: Cron job triggers
+    scheduler -> data_sync_service: SyncData()
+else "DataSyncController"
+    operator -> data_sync_controller++: GET /sync/data
+    data_sync_controller -> data_sync_service: SyncData()
+end
+
+note over operator, data_sync_service
+    Discovery
+end note
+
+@enduml
