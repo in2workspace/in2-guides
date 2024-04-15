@@ -7,3 +7,6 @@ This repository contains the implementation guides for the IN2 Enterprise soluti
 # Guides
 * [Desmos Guide](/desmos-guide/desmos-guide.md)
 * [IN2 Wallet Guide](/wallet-guide/wallet-guide.md)
+
+# Technical Documents/Specifications
+* [Desmos Technical Document](/desmos-tech-doc/desmos-technical-document.md)
