@@ -102,7 +102,7 @@ Visit the Dome Marketplace by clicking on the following link: [DOME Marketplace]
 1. Click on the **Sign In** button.
 2. Select **VC Login** from the options available.
 
-![Sign In and Select VC Login](./assets\Sign_In_And_Select_VC_Login.png)
+![Sign In and Select VC Login](./assets/Sign_In_And_Select_VC_Login.png)
 
 A QR code will be displayed on the screen. This QR code is unique to your login session and should be scanned using the DOME Wallet app.
 
@@ -131,7 +131,11 @@ Go back to the **Home** screen and press the **Scan QR** button to scan the QR c
 
 ### Step 5: Complete Attestation Exchange
 
-After scanning the QR code, the Wallet and Verifier initiate the AttestationExchange process. Upon successful completion, you will be redirected and logged into the marketplace.
+After scanning the QR code, the Wallet and Verifier initiate the AttestationExchange process and in the wallet, you will be asked to select the credential you wish to present to enter the portal. In this example case, as we only have one, we will use that. Once selected, a pop-up will appear to confirm if we want to use that credential.
+
+![Verifiable Credential Selection](./assets/DOME_Wallet_Select_Credential.png)
+
+Upon successful completion, you will be redirected and logged into the marketplace.
 
 ![Attestation Exchange Success](./assets/VC_Login_Success.png)
 
