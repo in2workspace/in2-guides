@@ -1,9 +1,9 @@
 ---
 layout: page
 title: "Desmos: Blockchain Connector Technical Document"
-date: 2023-03-26
+date: 2024-04-16
 version: v1.0.0
-author: "Oriol Canadés"
+editor: "Oriol Canadés"
 ---
 
 ![IN2, Ingeniería de la Información](../assets/images/in2-logo.png)
