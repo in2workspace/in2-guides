@@ -328,12 +328,12 @@ The Data Synchronization process can be triggered in three ways:
 #### 2.2. P2PDataSyncJob
 
 ##### 2.2.1. Peer Discovery
-Multiple known nodes must be configured, but at leas one need to be the DOME Marketplace node.
+Multiple known nodes must be configured, but at least one needs to be the DOME Marketplace node.
 > TODO: Every node needs to discover other nodes which are eligible to synchronize.
 > Peer discover can be done in a centralized way (P2P Hybrid) -> Trust Framework
 
 ##### 2.2.2. Set Connection
-> TODO: Try to set direct connection. (need to negotiate communication protocols, exchange keys to verify the identity of
+> TODO: Try to set direct connection. (Need to negotiate communication protocols, exchange keys to verify the identity of
 > the node, etc.)
 
 ##### 2.2.3. Data Negotiation
