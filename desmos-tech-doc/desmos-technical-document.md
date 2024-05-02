@@ -299,7 +299,7 @@ We will assume that the source of truth is the catalog with all their informatio
 
 Desmos offers two ways to synchronize entities:
 
-* **Blockchain connection**: The access node retrieves all data from the blockchain using the blockchain connector.
+* **Blockchain connection**: The local access node retrieves all data from the blockchain using the blockchain connector.
 * **P2PDataSyncJob**: The local access node retrieves entities from configured external access nodes, among which one
   need to be the DOME Marketplace node.
 
@@ -337,11 +337,10 @@ Multiple known nodes must be configured, but at least one needs to be the DOME M
 > the node, etc.)
 
 ##### 2.2.3. Data Negotiation
+The goal of the Data Negotiation process is to make our local entities known to the external access nodes and obtain a list of
+data of the entities of each external access node.
 ###### 2.2.3.1 Local access node
 ![Data Synchronization 2](images/use-case-data-synchronization-3-negotiation.png)
-
-The goal of the Data Negotiation process is to make our entities known to the external access nodes and obtain a list of
-data of the entities of each external access node.
 
 The process begins with a discovery step where it sends a GET request to /ngsi-ld/v1/entities/ with a query parameter.
 
@@ -573,6 +572,9 @@ The entities of the external list that are missing in the local list or have a n
 It sends the DataNegotiationResult with the new entities and the existing entities to the DataTransferJob.
 
 ##### 2.2.3. Data Transfer
+The out of sync entities are requested from the external access node and the integrity of the data is verified again with hashes.
+> NOTE: Nodes can implement data segmentation to optimize the transfer specially with network with high latency or low
+> connection velocity.
 ###### 2.2.3.1 Local access node
 ![Data Transfer 3](images/use-case-data-synchronization-4-transfer.png)
 When the system has both lists, it compares the local and external lists to find any differing entities.
@@ -710,10 +712,21 @@ Cache-Control: no-store
 
 Upon receiving a 200 OK response, the Access Node publishes an event with the received data, and return a 200 OK with the received data.
 
+##### 2.2.5. Data Verification
+The local node validate the consistency of the data received. If data is valid, iot will be published to the local 
+context broker.
+###### 2.2.5.1. Local Access Node
+![Data Negotiation 3](images/use-case-data-synchronization-5-verification.png)
 
-### 4. Completion
+###### 2.2.5.2. External Access Node
+![Data Negotiation 3](images/use-case-data-synchronization-5-external_verification.png)
 
-![Data Synchronization 4](images/use-case-data-synchronization-4-completion.png)
+##### 2.2.6. Closing connection
+> TODO: The node will close the connection for security purposes.
+
+##### 2.2.7. Completion
+
+![Data Synchronization 4](images/use-case-data-synchronization-7-completion.png)
 
 Once the synchronization is complete, the system marks the process as done.
 
