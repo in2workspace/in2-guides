@@ -7,9 +7,9 @@ autonumber
 
 '---------- Header ----------------
 
-boundary "External Access Node" as ean
+boundary "Local Access Node" as lan
 
-box "Access Node"
+box "External Access Node"
   participant "DataNegotiationJob" as dnj
   participant "DataTransferJob" as dtj
   participant "DataVerificationJob" as dvj
@@ -20,9 +20,9 @@ end box
 
 dnj -> dtj++: syncData(DataNegotiationResult)
     dtj -> dtj: buildEntitiesToSyncRequest(DataNegotiationResult))
-    dtj -> ean++: POST /sync/entities - Payload: EntitiesToSyncRequest
+    dtj -> lan++: POST /sync/entities - Payload: EntitiesToSyncRequest
     return 200 OK - Payload: List<Entities>
-    note right of ean
+    note right of lan
         List<Entities> is a list of ProductOffering
         and all related sub-entities, i.e.,
         ProductSpecification, ProductOfferingPrice,

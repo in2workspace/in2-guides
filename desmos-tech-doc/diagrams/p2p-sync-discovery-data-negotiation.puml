@@ -7,9 +7,9 @@ autonumber
 
 '---------- Header ----------------
 
-boundary "External Access Node" as ean
+boundary "Local Access Node" as lan
 
-box "Access Node"
+box "External Access Node"
   queue "ApplicationContext" as ac
   participant "DataNegotiationJob" as dnj
   participant "DataTransferJob" as dtj
