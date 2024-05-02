@@ -494,6 +494,77 @@ Cache-Control: no-store
 
 Upon receiving a 200 OK response, the Access Node publishes an event with the received data, and return a 200 OK with the received data.
 
+This is a non-normative example of a `DiscoverySyncRequest`:
+
+```plaintext
+POST /sync/discovery HTTP/1.1
+Host: <configured-access-node>
+Content-Type: application/json
+Authorization: <bearer_access_token>
+    
+{
+  "issuer" : "https://my-domain.org",
+  "external_entity_ids" : [
+    { 
+      "id" : "urn:ProductOffering:537e1ee3-0556-4fff-875f-e55bb97e7ab0",
+      "type": "ProductOffering",
+      "version": "v9.2",
+      "lastUpdate": "2023-10-05T12:00:00Z",      
+      "hash: "8bc17b3e9f6e3d54e3f5b63e4a8826a28bba7d03d0f46c7a79b1f4d13eb4ee2f",
+      "hashlink: "41332f3abafca9295930699a271b4e63de1acc166efe032bf04a6038fb18e8a8"
+    },
+    { 
+      "id" : "urn:ProductOffering:ed9c56c8-a5ab-42cc-bc62-0fca69a30c87",
+      "type": "ProductOffering",
+      "version": "v5.4",
+      "lastUpdate": "2024-02-24T12:00:00Z",      
+      "hash: "08b236983ba01bbcd268793b104917f89f0bba8160d2f693911087c72b9a8051",
+      "hashlink: "8bc17b3e9f6e3d54e3f5b63e4a8826a28bba7d03d0f46c7a79b1f4d13eb4ee2f"
+    }    
+  ]
+}
+```
+
+> NOTE: The IAM grants the permissions to start a synchronization process at the top of the Access Node.
+> The requester
+> MUST be a registered DOME Participant to start a synchronization process and get the list of external entity IDs.
+> This
+> endpoint is not public.
+
+If the Access Node is available,
+and the Participant has the permissions,
+it sends a 202 Accepted response with a payload containing their minimum viable entities for data negotiation list.
+
+DiscoverySyncResponse:
+
+```plaintext
+HTTP/1.1 202 ACCEPTED
+Content-Type: application/json
+Cache-Control: no-store
+
+{
+  "issuer": "https://<configured-access-node>.org",
+  "external_entity_ids": [
+    { 
+      "id" : "urn:ProductOffering:d86735a6-0faa-463d-a872-00b97affa1cb",
+      "type": "ProductOffering",
+      "version": "v1.2",
+      "lastUpdate": "2024-04-01T12:00:00Z",
+      "hash: "89e62d6be87fd39dc19dc69a35d58d1ac2351854bf48a8264bf075643c89eddf",
+      "hashlink: "8ce0461d10e02556d3f16e21c8ac662c037f8b39efd059186b070f9aad8c00f0"
+    },
+    { 
+      "id" : "urn:ProductOffering:ed9c56c8-a5ab-42cc-bc62-0fca69a30c87",
+      "type": "ProductOffering",
+      "version": "v5.4",
+      "lastUpdate": "2024-02-24T12:00:00Z",      
+      "hash: "08b236983ba01bbcd268793b104917f89f0bba8160d2f693911087c72b9a8051",
+      "hashlink: "8bc17b3e9f6e3d54e3f5b63e4a8826a28bba7d03d0f46c7a79b1f4d13eb4ee2f"
+    }
+  ]
+}
+```
+
 ###### 2.2.3.1 Data Negotiation Event
 ![Data Negotiation 3](images/p2p-sync-discovery-data-negotiation.png)
 DataNegotiationJob listens for a DataNegotiationEvent, when it receives it compares the local and external lists to find any differing entities.
