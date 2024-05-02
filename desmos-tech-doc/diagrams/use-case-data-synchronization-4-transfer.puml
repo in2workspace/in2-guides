@@ -25,8 +25,10 @@ end note
 
 dnj -> dtj++: syncData(DataNegotiationResult)
     dtj -> dtj: buildEntitiesToSyncRequest(DataNegotiationResult))
-    dtj -> external_access_node++: POST /sync/entities - Payload: EntitiesToSyncRequest
-    return 200 OK - Payload: List<Entities>
+    loop forEach configured Access Node with entities to synchronize
+        dtj -> external_access_node++: POST /sync/entities - Payload: EntitiesToSyncRequest
+        return 200 OK - Payload: List<Entities>
+    end
     note left of external_access_node
         List<Entities> is a list of ProductOffering
         and all related sub-entities, i.e.,

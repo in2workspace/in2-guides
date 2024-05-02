@@ -23,7 +23,7 @@ editor: "Oriol Canadés"
     * [2. Subscriptions Setup](#2-subscriptions-setup)
       * [2.1 Broker Subscription](#21-broker-subscription)
       * [2.2 DLT Subscription](#22-dlt-subscription)
-* [Use Case 2 — Data Synchronization](#use-case-2-data-synchronization)
+* [Use Case 2 — Data Synchronization](#use-case-2--data-synchronization)
   + [1.Introduction](#1introduction)
   + [2. Data Synchronization Process](#2-data-synchronization-process)
     * [2.1. Triggering Data Synchronization](#21-triggering-data-synchronization)
@@ -322,15 +322,13 @@ The Data Synchronization process can be triggered in three ways:
   Synchronization process. P2PDataSyncJob will be used as synchronization way to prevent
   Blockchain connection synchronization from slowing down the start of the application.
 
+* **Scheduled Task**: A Cron job is set up to automatically trigger the Data Synchronization process at a specific time,
+  for example, at 2:00 AM daily. The synchronization will be done using both blockchain connection and P2PDataSyncJob.
 
 * **Operator**: An operator can manually initiate the Data Synchronization process by sending a GET request
   to `/sync/data`.
 
 > NOTE: It hasn't yet been decided which synchronization method will use the operator trigger.
-
-
-* **Scheduled Task**: A Cron job is set up to automatically trigger the Data Synchronization process at a specific time,
-  for example, at 2:00 AM daily. The synchronization will be done using both blockchain connection and P2PDataSyncJob.
 
 #### 2.2. P2PDataSyncJob
 
@@ -344,7 +342,7 @@ Multiple known nodes must be configured, but at least one needs to be the DOME M
 > the node, etc.)
 
 ##### 2.2.3. Data Negotiation
-The goal of the Data Negotiation process is to make our local entities known to the external access nodes and obtain a list of
+The goal of the Data Negotiation process is to make our local entities known to the external access nodes and to obtain a list of
 data of the entities of each external access node.
 ###### 2.2.3.1 Local access node
 ![Data Synchronization 2](images/use-case-data-synchronization-3-negotiation.png)

@@ -19,7 +19,7 @@ end box
 
 '---------- Diagram ----------------
 
-note over lan, cb
+note over lan, dtj
     Negotiation
 end note
 
@@ -55,7 +55,7 @@ end note
 dnj -> dtj++: syncData(DataNegotiationResult)
 return
 
-note over lan, cb
+note over lan, dtj
     Transfer
 end note
 
