@@ -12,27 +12,27 @@ box "Local Access Node" #LightBlue
     control "P2PDataSyncController" as p2p_data_sync_controller_workflow
     control "Scheduler" as scheduler
     control "Bootstrapping" as bootstrapping
-    participant "P2PDataSyncWorkflow" as p2p_data_sync_workflow
+    participant "DataSyncWorkflow" as data_sync_workflow
 end box
 
 ' -------------------- Diagram -------------------- '
 
-note over operator, p2p_data_sync_workflow
+note over operator, data_sync_workflow
     Trigger data sync
 end note
 
 alt "Bootstrapping"
     bootstrapping -> bootstrapping++: Application starts/restarts
-    bootstrapping -> p2p_data_sync_workflow++: SyncData()
+    bootstrapping -> data_sync_workflow++: SyncData()
 else "Scheduler"
     scheduler -> scheduler++: Cron job triggers
-    scheduler -> p2p_data_sync_workflow: SyncData()
+    scheduler -> data_sync_workflow: SyncData()
 else "P2PDataSyncController"
     operator -> p2p_data_sync_controller_workflow++: GET /sync/data
-    p2p_data_sync_controller_workflow -> p2p_data_sync_workflow: SyncData()
+    p2p_data_sync_controller_workflow -> data_sync_workflow: SyncData()
 end
 
-note over operator, p2p_data_sync_workflow
+note over operator, data_sync_workflow
     Discovery
 end note
 
