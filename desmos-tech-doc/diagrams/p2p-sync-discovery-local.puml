@@ -12,6 +12,7 @@ boundary "External Access Node" as ean
 box "Access Node"
 
   control "P2PDataSyncController" as p2pController
+  participant "DataSyncWorkflow" as p2p_data_sync_workflow
   participant "P2PDataSyncJob" as p2p_data_sync_job
   queue "ApplicationContext" as ac
   participant "Context Broker" as cb
@@ -38,10 +39,12 @@ note right of ean
     when the DiscoverySyncRequest is created.
 end note
 
-    p2pController -> p2p_data_sync_job++: dataDiscovery()
-        p2p_data_sync_job -> cb++: GET /ngsi-ld/v1/entities\n  ?type=ProductOffering\n  &attrs=lastUpdate,version
-        return 200 OK - Payload: List<EntityDTO>
-        p2p_data_sync_job -> ac: PublishDataNegotiationEvent
+    p2pController -> p2p_data_sync_workflow++: dataDiscovery()
+        p2p_data_sync_workflow -> p2p_data_sync_job++: dataDiscovery()
+            p2p_data_sync_job -> cb++: GET /ngsi-ld/v1/entities\n  ?type=ProductOffering\n  &attrs=lastUpdate,version
+            return 200 OK - Payload: List<EntityDTO>
+            p2p_data_sync_job -> ac: PublishDataNegotiationEvent
+        return List<EntityDTO>
     return List<EntityDTO>
 return 200 OK - Payload: List<EntityDTO>
 
