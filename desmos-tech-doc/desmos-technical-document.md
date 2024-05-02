@@ -451,47 +451,12 @@ Cache-Control: no-store
 }
 ```
 
+Then, it sends the DataNegotiationResult with the new entities, the existing entities, and the external issuer to the DataTransferJob.
+
 ###### 2.2.3.2 External access node
-![Data Negotiation 2](images/use-case-data-synchronization-3-external_negotiation_1.png)
+![Data Synchronization 3](images/use-case-data-synchronization-3-external_negotiation_1.png)
 In the Data Negotiation, the External Access Node, receives a POST request to /sync/p2p/discovery, with the
 minimum viable entities for data negotiation.
-
-Then, the External Access Node sends a GET request to /ngsi-ld/v1/entities/ with a query parameter.
-
-The query parameter helps to retrieve the list of local minimum viable entities for data negotiation, that are stored in
-the local Context Broker,
-not the full entity data.
-
-This is a non-normative example of a `EntitiesDiscoveryRequest` and `EntitiesDiscoveryResponse`:
-
-```plaintext
-GET /ngsi-ld/v1/entities/ HTTP/1.1
-Host: context-broker.org
-Content-Type: application/json
-```
-
-```plaintext
-HTTP/1.1 200 OK
-Content-Type: application/json
-Cache-Control: no-store
-
-[
-    {
-        "id": "urn:ProductOffering:d86735a6-0faa-463d-a872-00b97affa1cb",
-        "type": "ProductOffering",
-        "version": "v1.2",
-        "lastUpdate": "2024-04-01T12:00:00Z"
-    },
-    {
-        "id": "urn:ProductOffering:ed9c56c8-a5ab-42cc-bc62-0fca69a30c87",
-        "type": "ProductOffering",
-        "version": "v5.4",
-        "lastUpdate": "2024-02-24T12:00:00Z"
-    }
-]
-```
-
-Upon receiving a 200 OK response, the Access Node publishes an event with the received data, and return a 200 OK with the received data.
 
 This is a non-normative example of a `DiscoverySyncRequest`:
 
@@ -530,9 +495,44 @@ Authorization: <bearer_access_token>
 > This
 > endpoint is not public.
 
-If the Access Node is available,
-and the Participant has the permissions,
-it sends a 202 Accepted response with a payload containing their minimum viable entities for data negotiation list.
+Then, the External Access Node sends a GET request to /ngsi-ld/v1/entities/ with a query parameter.
+
+The query parameter helps to retrieve the list of local minimum viable entities for data negotiation, that are stored in
+the local Context Broker,
+not the full entity data.
+
+This is a non-normative example of a `EntitiesDiscoveryRequest` and `EntitiesDiscoveryResponse`:
+
+```plaintext
+GET /ngsi-ld/v1/entities/ HTTP/1.1
+Host: context-broker.org
+Content-Type: application/json
+```
+
+```plaintext
+HTTP/1.1 200 OK
+Content-Type: application/json
+Cache-Control: no-store
+
+[
+    {
+        "id": "urn:ProductOffering:d86735a6-0faa-463d-a872-00b97affa1cb",
+        "type": "ProductOffering",
+        "version": "v1.2",
+        "lastUpdate": "2024-04-01T12:00:00Z"
+    },
+    {
+        "id": "urn:ProductOffering:ed9c56c8-a5ab-42cc-bc62-0fca69a30c87",
+        "type": "ProductOffering",
+        "version": "v5.4",
+        "lastUpdate": "2024-02-24T12:00:00Z"
+    }
+]
+```
+
+Upon receiving a 200 OK response, the Access Node publishes an event with the received data, and return a 200 OK with the received context broker data.
+
+Finally it sends a 202 Accepted response with a payload containing their minimum viable entities for data negotiation list.
 
 This is a non-normative example of a `DiscoverySyncResponse`:
 
@@ -565,25 +565,28 @@ Cache-Control: no-store
 ```
 
 ###### 2.2.3.1 Data Negotiation Event
-![Data Negotiation 3](images/use-case-data-synchronization-3-external_negotiation_2.png)
+![Data Synchronization 4](images/use-case-data-synchronization-3-external_negotiation_2.png)
 
 DataNegotiationJob listens for a DataNegotiationEvent, when it receives it compares the local and external lists to find any differing entities.
 The entities of the external list that are missing in the local list or have a newer version or timestamp will be candidates for synchronization through the Access Node.
-It sends the DataNegotiationResult with the new entities and the existing entities to the DataTransferJob.
+
+Then, it sends the DataNegotiationResult with the new entities, the existing entities, and the external issuer to the DataTransferJob.
 
 ##### 2.2.3. Data Transfer
 The out of sync entities are requested from the external access node and the integrity of the data is verified again with hashes.
 > NOTE: Nodes can implement data segmentation to optimize the transfer specially with network with high latency or low
 > connection velocity.
 ###### 2.2.3.1 Local access node
-![Data Transfer 3](images/use-case-data-synchronization-4-transfer.png)
-When the system has both lists, it compares the local and external lists to find any differing entities.
-The entities of the external list
-that are missing in the local list will be candidates for synchronization through the Access Node.
+![Data Synchronization 5](images/use-case-data-synchronization-4-transfer.png)
+
+In the Data Transfer, the External Access Node, receives a DataNegotiationResult with the new entities to sync, the 
+existing entities to sync and the external issuer.
 
 The Local Access Node request each access node their missing and outdated entities.
 
-This is a non-normative example of an EntitySyncRequest:
+> TODO: Nodes can implement data segmentation to optimize the transfer specially with networks with high latency or low connection velocity.
+
+This is a non-normative example of an `EntitySyncRequest`:
 
 ```plaintext
 POST /sync/entities HTTP/1.1
@@ -653,10 +656,8 @@ The response contains the entity ProductOffering and the entity's relationships 
 > This is not happening within the current pub-sub mechanism through the blockchain because we implement a hashlink to
 > ensure the integrity of the entity.
 
-The local Blockchain Connector processes the response, that means, before publishing any entity, it checks if the entity
-exists in the local Context Broker.
-
-It sends a POST request to upsert the missing and outdated entities in the Context Broker.
+The local node verifies the entities integrity using the hash, if all are correct it sends a POST request to upsert the 
+missing and outdated entities in the Context Broker.
 
 If one or more entities are created it receives a 201 Created response.
 
@@ -665,34 +666,119 @@ If only entities are updated it receives a 204 No Content response.
 > NOTE: Bear in mind that all entities processed by the Blockchain Connector have their own audit records, although they
 > are not explained in this diagram.
 
+Finally, the DataTransferJob, sends the entities list to the DataVerificationJob.
+
 ###### 2.2.3.2 External access node
-![Data Negotiation 3](images/use-case-data-synchronization-4-external_transfer.png)
+![Data Synchronization 6](images/use-case-data-synchronization-4-external_transfer.png)
+
 In the Data Transfer, the External Access Node, receives a DataNegotiationResult with the new entities to sync, the
 existing entities to sync and the external issuer.
 
 The access node, request the entities to the issuer and receive it.
 
 > TODO: Nodes can implement data segmentation to optimize the transfer specially with networks with high latency or low connection velocity.
-Then it
 
-Then, the External Access Node sends a GET request to /ngsi-ld/v1/entities/ with a query parameter.
-
-The query parameter helps to retrieve the list of local minimum viable entities for data negotiation, that are stored in
-the local Context Broker,
-not the full entity data.
-
-This is a non-normative example of a `EntitiesDiscoveryRequest` and `EntitiesDiscoveryResponse`:
+This is a non-normative example of an `EntitySyncRequest`:
 
 ```plaintext
-GET /ngsi-ld/v1/entities/ HTTP/1.1
-Host: context-broker.org
+POST /sync/entities HTTP/1.1
+Host: <configured-access-node>
 Content-Type: application/json
+Authorization: <bearer_access_token>
+    
+[
+  {"id" : "urn:ProductOffering:537e1ee3-0556-4fff-875f-e55bb97e7ab0"}
+]
 ```
 
+> NOTE: The IAM grants the permissions to start a synchronization process at the top of the Access Node.
+> The requester needs to have permissions to retrieve the requested entities from the Access Node.
+
+> TODO: How the IAM knows if the requester has permissions to retrieve not only the entity whether the entity's
+> relationships from the Access Node?
+
+The configured Access Node processes the request and retrieves the entity, ProductOffering, and the entity's
+relationships from the local Context Broker.
+Then, it creates a response with the detailed data requested.
+
+This is a non-normative example of a `EntitySyncResponse` with the detailed data requested:
+
 ```plaintext
-HTTP/1.1 200 OK
+HTTP/1.1 202 ACCEPTED
 Content-Type: application/json
 Cache-Control: no-store
+
+[
+  {
+    "id": "urn:ProductOffering:537e1ee3-0556-4fff-875f-e55bb97e7ab0",
+    "type": "ProductOffering",
+    "version": "v9.2",
+    "lastUpdate": "2023-10-05T12:00:00Z"
+    "productSpecification": {
+      "id": "spec-broadband-001",
+      "name": "1Gbps Broadband Spec"
+    },
+    "productOfferingPrice": {
+      "type": "Relationship",
+      "object": "urn:ProductOfferingPrice:912efae1-7ff6-4838-89f3-cfedfdfa1c5a"
+    }
+  },
+  {
+    "id": "urn:ProductOfferingPrice:912efae1-7ff6-4838-89f3-cfedfdfa1c5a",
+    "type": "ProductOfferingPrice",    
+    "version": "v2.1",
+    "lastUpdate": "2023-10-09T12:00:00Z"
+    "name": "Monthly Subscription Fee",
+    "priceType": "recurring",
+    "price": {
+      "amount": "49.99",
+      "currency": "USD"
+    },
+    "recurringChargePeriod": "monthly"
+  }
+]
+```
+
+The response contains the entity ProductOffering and the entity's relationships ProductOfferingPrice in a same response.
+
+> TODO: In this scenario, we cannot guarantee the integrity of the entity's relationships.
+> We need to define a mechanism to ensure the integrity of the entity's relationships,
+> such as the entity's relationships hash.
+>
+> This is not happening within the current pub-sub mechanism through the blockchain because we implement a hashlink to
+> ensure the integrity of the entity.
+
+The local node verifies the entities integrity using the hash, if all are correct it sends a POST request to upsert the
+missing and outdated entities in the Context Broker.
+
+If one or more entities are created it receives a 201 Created response.
+
+If only entities are updated it receives a 204 No Content response.
+
+> NOTE: Bear in mind that all entities processed by the Blockchain Connector have their own audit records, although they
+> are not explained in this diagram.
+
+Finally, the DataTransferJob, sends the entities list to the DataVerificationJob.
+
+##### 2.2.5. Data Verification
+The local node validate the consistency of the data received. If data is valid, it will be published to the local 
+context broker.
+###### 2.2.5.1. Local Access Node
+![Data Synchronization 7](images/use-case-data-synchronization-5-verification.png)
+
+The DataVerificationJob finds the latest audit record for entity and to validate the consistency of every entity.
+For a new entity, it validates that the hashlink needs to be the same as the hashlink value received from the external 
+entity list and for an existing entity, the audit record hashlink received from the external entity list must be 
+equal to the audit record hashlink value + the hash received from the external entity list.
+
+Then it saves the retrieved audit record for all the entities, upserts the entities to the context broker, and it saves
+the published audit record for all the entities.
+
+This is a non-normative example of a `EntitiesUpsertRequest` and `EntitiesUpsertResponse`:
+```plaintext
+POST /ngsi-ld/v1/entityOperations/upsert HTTP/1.1
+Host: context-broker.org
+Content-Type: application/json
 
 [
     {
@@ -710,23 +796,57 @@ Cache-Control: no-store
 ]
 ```
 
-Upon receiving a 200 OK response, the Access Node publishes an event with the received data, and return a 200 OK with the received data.
-
-##### 2.2.5. Data Verification
-The local node validate the consistency of the data received. If data is valid, iot will be published to the local 
-context broker.
-###### 2.2.5.1. Local Access Node
-![Data Negotiation 3](images/use-case-data-synchronization-5-verification.png)
+```plaintext
+HTTP/1.1 201 Created
+Content-Type: application/json
+Cache-Control: no-store
+```
 
 ###### 2.2.5.2. External Access Node
-![Data Negotiation 3](images/use-case-data-synchronization-5-external_verification.png)
+![Data Synchronization 8](images/use-case-data-synchronization-5-external_verification.png)
+
+The DataVerificationJob finds the latest audit record for entity and to validate the consistency of every entity.
+For a new entity, it validates that the hashlink needs to be the same as the hashlink value received from the external
+entity list and for an existing entity, the audit record hashlink received from the external entity list must be
+equal to the audit record hashlink value + the hash received from the external entity list.
+
+Then it saves the retrieved audit record for all the entities, upserts the entities to the context broker, and it saves
+the published audit record for all the entities.
+
+This is a non-normative example of a `EntitiesUpsertRequest` and `EntitiesUpsertResponse`:
+```plaintext
+POST /ngsi-ld/v1/entityOperations/upsert HTTP/1.1
+Host: context-broker.org
+Content-Type: application/json
+
+[
+    {
+        "id": "urn:ProductOffering:d86735a6-0faa-463d-a872-00b97affa1cb",
+        "type": "ProductOffering",
+        "version": "v1.2",
+        "lastUpdate": "2024-04-01T12:00:00Z"
+    },
+    {
+        "id": "urn:ProductOffering:ed9c56c8-a5ab-42cc-bc62-0fca69a30c87",
+        "type": "ProductOffering",
+        "version": "v5.4",
+        "lastUpdate": "2024-02-24T12:00:00Z"
+    }
+]
+```
+
+```plaintext
+HTTP/1.1 201 Created
+Content-Type: application/json
+Cache-Control: no-store
+```
 
 ##### 2.2.6. Closing connection
 > TODO: The node will close the connection for security purposes.
 
 ##### 2.2.7. Completion
 
-![Data Synchronization 4](images/use-case-data-synchronization-7-completion.png)
+![Data Synchronization 9](images/use-case-data-synchronization-7-completion.png)
 
 Once the synchronization is complete, the system marks the process as done.
 
