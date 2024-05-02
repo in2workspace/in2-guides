@@ -9,8 +9,9 @@ skinparam BoxPadding 10
 actor "Operator" as operator
 
 box "Local Access Node" #LightBlue
-    participant "P2PDataSyncJob" as p2p_data_sync_job
-    participant "DataNegotiationJob" as data_negotiation_job
+    participant "P2PDataSyncJob" as p2p_dsj
+    participant "DataNegotiationJob" as dnj
+    participant "DataTransferJob" as dtj
     boundary "Context Broker" as context_broker
 end box
 
@@ -22,9 +23,9 @@ note over operator, external_access_node
     Negotiation
 end note
 
-p2p_data_sync_job -> data_negotiation_job++: dataDiscovery()
-    activate data_negotiation_job
-    data_negotiation_job -> context_broker++: GET /ngsi-ld/v1/entities/type=<type>&attrs=version,lastUpdate
+p2p_dsj -> dnj++: negotiateDataSync()
+    activate dnj
+    dnj -> context_broker++: GET /ngsi-ld/v1/entities/type=<type>&attrs=version,lastUpdate
         note right of context_broker
           [
             { "id": "urn:ngsi-ld:ProductOffering:<uuid>"
@@ -39,7 +40,7 @@ p2p_data_sync_job -> data_negotiation_job++: dataDiscovery()
     return 200 OK Payload: local_minimum_viable_entities_for_data_negotiation_list
 
     loop forEach configured Access Node
-        data_negotiation_job -> external_access_node++: POST /sync/p2p/discovery
+        dnj -> external_access_node++: POST /sync/p2p/discovery
             note right of external_access_node
                 This process is defined in the
                 data_sync_discovery diagram.
@@ -50,6 +51,24 @@ p2p_data_sync_job -> data_negotiation_job++: dataDiscovery()
             end note
         return 202 Accepted Payload: external_minimum_viable_entities_for_data_negotiation_list
     end
+
+    dnj -> dnj: checkWhichExternalDataIsMissing()
+    dnj -> dnj: checkVersionsAndTimestampsFromEntityIdMatched()
+    dnj -> dnj: createDataNegotiationResult()
+    note right of dnj
+        DataNegotiationResult:
+        {
+            List<NewEntitiesToSync>,
+            List<ExistingEntitiesToSync>,
+            ExternalIssuer
+        }
+
+        NewEntitiesToSync is a list of EntityIds of the
+        entities that are not present in the local database
+    end note
+
+    dnj -> dtj++: syncData(DataNegotiationResult)
+    return
 return
 note over operator, external_access_node
     Transfer
