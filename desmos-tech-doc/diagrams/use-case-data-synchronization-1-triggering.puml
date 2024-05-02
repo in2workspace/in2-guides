@@ -13,26 +13,30 @@ box "Local Access Node" #LightBlue
     control "Scheduler" as scheduler
     control "Bootstrapping" as bootstrapping
     participant "DataSyncWorkflow" as data_sync_workflow
+    participant "P2PDataSyncJob" as p2p_data_sync_job
+    participant "BlockchainDataSyncJob" as blockchain_data_sync_job
 end box
 
 ' -------------------- Diagram -------------------- '
 
-note over operator, data_sync_workflow
+note over operator, blockchain_data_sync_job
     Trigger data sync
 end note
 
 alt "Bootstrapping"
     bootstrapping -> bootstrapping++: Application starts/restarts
-    bootstrapping -> data_sync_workflow++: SyncData()
+    bootstrapping -> data_sync_workflow++: P2PSyncData()
+    data_sync_workflow -> p2p_data_sync_job++: SyncData()
 else "Scheduler"
     scheduler -> scheduler++: Cron job triggers
     scheduler -> data_sync_workflow: SyncData()
 else "P2PDataSyncController"
     operator -> p2p_data_sync_controller_workflow++: GET /sync/data
-    p2p_data_sync_controller_workflow -> data_sync_workflow: SyncData()
+    p2p_data_sync_controller_workflow -> data_sync_workflow: BlockchainSyncData()
+    data_sync_workflow -> blockchain_data_sync_job++: SyncData()
 end
 
-note over operator, data_sync_workflow
+note over operator, blockchain_data_sync_job
     Discovery
 end note
 
