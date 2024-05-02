@@ -27,7 +27,7 @@ note right of ean
     DiscoverySyncRequest:
 
     {
-        List<MvEntity4DataNegotiation> external_entity_ids ->
+        List<MvEntity4DataNegotiation> mvEntities4DataNegotiation ->
             id, type,
             version, lastUpdate
             hash, and hashlink(as previousHash)
