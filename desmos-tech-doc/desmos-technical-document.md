@@ -339,6 +339,7 @@ Multiple known nodes must be configured, but at least one needs to be the DOME M
 ##### 2.2.3. Data Negotiation
 ###### 2.2.3.1 Local access node
 ![Data Synchronization 2](images/use-case-data-synchronization-2-discovery.png)
+
 The goal of the Data Negotiation process is to make our entities known to the external access nodes and obtain a list of
 data of the entities of each external access node.
 
@@ -435,13 +436,17 @@ Cache-Control: no-store
       "id" : "urn:ProductOffering:537e1ee3-0556-4fff-875f-e55bb97e7ab0",
       "type": "ProductOffering",
       "version": "v9.2",
-      "lastUpdate": "2023-10-05T12:00:00Z"
+      "lastUpdate": "2023-10-05T12:00:00Z",      
+      "hash: "8bc17b3e9f6e3d54e3f5b63e4a8826a28bba7d03d0f46c7a79b1f4d13eb4ee2f",
+      "hashlink: "41332f3abafca9295930699a271b4e63de1acc166efe032bf04a6038fb18e8a8"
     },
     { 
       "id" : "urn:ProductOffering:ed9c56c8-a5ab-42cc-bc62-0fca69a30c87",
       "type": "ProductOffering",
       "version": "v5.4",
-      "lastUpdate": "2024-02-24T12:00:00Z" 
+      "lastUpdate": "2024-02-24T12:00:00Z",      
+      "hash: "08b236983ba01bbcd268793b104917f89f0bba8160d2f693911087c72b9a8051",
+      "hashlink: "8bc17b3e9f6e3d54e3f5b63e4a8826a28bba7d03d0f46c7a79b1f4d13eb4ee2f"
     }
   ]
 }
