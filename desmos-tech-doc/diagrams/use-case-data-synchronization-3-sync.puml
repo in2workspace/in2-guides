@@ -9,7 +9,7 @@ skinparam BoxPadding 10
 actor "Operator" as operator
 
 box "Local Access Node" #LightBlue
-    participant "DataSyncService" as data_sync_service
+    participant "P2PDataSyncWorkflow" as p2p_data_sync_workflow
     boundary "Context Broker" as context_broker
 end box
 
@@ -17,31 +17,25 @@ boundary "External Access Node" as external_access_node
 
 ' -------------------- Diagram -------------------- '
 
-activate data_sync_service
+activate p2p_data_sync_workflow
 
 note over operator, external_access_node
     Sync
 end note
 
-data_sync_service -> data_sync_service: Compare local_entities_id_list\n with external_entities_id_list
-data_sync_service -> external_access_node++: POST /sync/entities Payload: diff_entities_id_list
-    note right of external_access_node
-        This process is defined in
-        the data_sync_retrieval
-        diagram.
-    end note
-return 202 Accepted Payload: entities_list
 
-loop for each entity in entities_list
-    data_sync_service -> context_broker++: GET /ngsi-ld/v1/entities/<entity_id>
-    context_broker --> data_sync_service: response
-    alt "Entity exists"
-        data_sync_service -> context_broker: PATCH /ngsi-ld/v1/entities/<entity_id>
-        context_broker --> data_sync_service: 204 No Content
-    else "Entity does not exist"
-        data_sync_service -> context_broker: POST /ngsi-ld/v1/entities
-        return 201 Created
-    end
+
+loop forEach configured Access Node
+    p2p_data_sync_workflow -> p2p_data_sync_workflow: Compare local_minimum_viable_entities_for_data_negotiation_list\n with external_minimum_viable_entities_for_data_negotiation_list
+    p2p_data_sync_workflow -> external_access_node++: POST /sync/entities Payload: diff_entities_id_list
+        note right of external_access_node
+            This process is defined in
+            the data_sync_retrieval
+            diagram.
+        end note
+    return 201 Created Payload: entities_list
+    p2p_data_sync_workflow -> context_broker: POST /ngsi-ld/v1/entityOperations/upsert Payload: entities_list
+    return 201 Created
 end
 
 note over operator, external_access_node
