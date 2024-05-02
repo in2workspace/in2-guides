@@ -9,7 +9,7 @@ skinparam BoxPadding 10
 actor "Operator" as operator
 
 box "Local Access Node" #LightBlue
-    control "P2PDataSyncController" as p2p_data_sync_controller
+    control "DataSyncController" as p2p_data_sync_controller
     control "Scheduler" as scheduler
     control "Bootstrapping" as bootstrapping
     participant "P2PDataSyncJob" as p2p_data_sync_job
@@ -33,7 +33,7 @@ alt "Bootstrapping"
 else "Scheduler"
     p2p_data_sync_job --> scheduler: Done
     deactivate scheduler
-else "P2PDataSyncController"
+else "DataSyncController"
     p2p_data_sync_job --> p2p_data_sync_controller: Done
     deactivate p2p_data_sync_job
     p2p_data_sync_controller --> operator: 200 OK

@@ -9,7 +9,7 @@ skinparam BoxPadding 10
 actor "Operator" as operator
 
 box "Local Access Node" #LightBlue
-    control "P2PDataSyncController" as p2p_data_sync_controller_workflow
+    control "DataSyncController" as data_sync_controller
     control "Scheduler" as scheduler
     control "Bootstrapping" as bootstrapping
     participant "DataSyncWorkflow" as data_sync_workflow
@@ -30,9 +30,9 @@ alt "Bootstrapping"
 else "Scheduler"
     scheduler -> scheduler++: Cron job triggers
     scheduler -> data_sync_workflow: SyncData()
-else "P2PDataSyncController"
-    operator -> p2p_data_sync_controller_workflow++: GET /sync/data
-    p2p_data_sync_controller_workflow -> data_sync_workflow: BlockchainSyncData()
+else "DataSyncController"
+    operator -> data_sync_controller++: GET /sync/data
+    data_sync_controller -> data_sync_workflow: BlockchainSyncData()
     data_sync_workflow -> blockchain_data_sync_job++: SyncData()
 end
 
