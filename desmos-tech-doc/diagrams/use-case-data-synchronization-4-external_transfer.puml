@@ -17,6 +17,10 @@ end box
 
 '---------- Diagram ----------------
 
+note over lan, dvj
+    Transfer
+end note
+
 dnj -> dtj++: syncData(DataNegotiationResult)
     dtj -> dtj: buildEntitiesToSyncRequest(DataNegotiationResult))
     dtj -> lan++: POST /sync/entities - Payload: EntitiesToSyncRequest
@@ -37,5 +41,9 @@ dnj -> dtj++: syncData(DataNegotiationResult)
     return
 
 return
+
+note over lan, dvj
+    Verification
+end note
 
 @enduml

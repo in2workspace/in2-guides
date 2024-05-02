@@ -21,6 +21,10 @@ end box
 
 '---------- Diagram ----------------
 
+note over lan, cb
+    Negotiation
+end note
+
 lan -> data_sync_Controller++: POST /sync/p2p/discovery \nPayload: DiscoverySyncRequest
 
 note right of lan
@@ -47,5 +51,9 @@ end note
         return List<MVEntity4DataNegotiation>
     return List<MVEntity4DataNegotiation>
 return 200 OK - Payload: List<MVEntity4DataNegotiation>
+
+note over lan, cb
+    Transfer
+end note
 
 @enduml

@@ -21,6 +21,10 @@ end box
 
 '---------- Diagram ----------------
 
+note over lan, cb
+    Verification
+end note
+
     dtj -> dnj++: verifyData(List<Entities>)
         loop forEach Entity
             dnj -> ars++: findLatestAuditRecordForEntity(EntityId)
@@ -66,6 +70,5 @@ end box
         end
     return
 return
-
 
 @enduml
