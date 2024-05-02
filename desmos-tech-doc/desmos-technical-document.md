@@ -453,7 +453,7 @@ Cache-Control: no-store
 ```
 
 ###### 2.2.3.2 External access node
-![Data Negotiation 2](images/p2p-sync-discovery-local.png)
+![Data Negotiation 2](images/use-case-data-synchronization-3-external_negotiation_1.png)
 In the Data Negotiation, the External Access Node, receives a POST request to /sync/p2p/discovery, with the
 minimum viable entities for data negotiation.
 
@@ -566,7 +566,7 @@ Cache-Control: no-store
 ```
 
 ###### 2.2.3.1 Data Negotiation Event
-![Data Negotiation 3](images/p2p-sync-discovery-data-negotiation.png)
+![Data Negotiation 3](images/use-case-data-synchronization-3-external_negotiation_2.png)
 
 DataNegotiationJob listens for a DataNegotiationEvent, when it receives it compares the local and external lists to find any differing entities.
 The entities of the external list that are missing in the local list or have a newer version or timestamp will be candidates for synchronization through the Access Node.
@@ -574,7 +574,7 @@ It sends the DataNegotiationResult with the new entities and the existing entiti
 
 ##### 2.2.3. Data Transfer
 ###### 2.2.3.1 Local access node
-![Data Synchronization 3](images/use-case-data-synchronization-3-sync.png)
+![Data Transfer 3](images/use-case-data-synchronization-4-transfer.png)
 When the system has both lists, it compares the local and external lists to find any differing entities.
 The entities of the external list
 that are missing in the local list will be candidates for synchronization through the Access Node.
@@ -664,7 +664,7 @@ If only entities are updated it receives a 204 No Content response.
 > are not explained in this diagram.
 
 ###### 2.2.3.2 External access node
-![Data Negotiation 3](images/p2p-sync-discovery-data-negotiation.png)
+![Data Negotiation 3](images/use-case-data-synchronization-4-external_transfer.png)
 In the Data Transfer, the External Access Node, receives a DataNegotiationResult with the new entities to sync, the
 existing entities to sync and the external issuer.
 

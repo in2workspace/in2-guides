@@ -1,0 +1,52 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+skinparam BoxPadding 10
+
+' -------------------- Headers -------------------- '
+
+actor "Operator" as operator
+
+box "Local Access Node" #LightBlue
+    participant "DataNegotiationJob" as dnj
+    participant "DataTransferJob" as dtj
+    participant "DataVerificationJob" as dvj
+end box
+
+boundary "External Access Node" as external_access_node
+
+' -------------------- Diagram -------------------- '
+
+
+note over operator, external_access_node
+    Transfer
+end note
+
+dnj -> dtj++: syncData(DataNegotiationResult)
+    dtj -> dtj: buildEntitiesToSyncRequest(DataNegotiationResult))
+    dtj -> external_access_node++: POST /sync/entities - Payload: EntitiesToSyncRequest
+    return 200 OK - Payload: List<Entities>
+    note left of external_access_node
+        List<Entities> is a list of ProductOffering
+        and all related sub-entities, i.e.,
+        ProductSpecification, ProductOfferingPrice,
+        Catalog, etc.
+    end note
+
+    dtj -> dtj: verifyEntitiesIntegrity(List<Entities>, DataNegotiationResult)
+    note right of dtj
+        The integrity of the data is verified again with the hash.
+    end note
+
+    dtj -> dvj++: verifyData(List<Entities>)
+    return
+return
+
+note over operator, external_access_node
+    Verification
+end note
+
+
+
+@enduml
