@@ -564,7 +564,7 @@ Cache-Control: no-store
 }
 ```
 
-###### 2.2.3.1 Data Negotiation Event
+###### 2.2.3.2.1 Data Negotiation Event
 ![Data Synchronization 4](images/use-case-data-synchronization-3-external_negotiation_2.png)
 
 DataNegotiationJob listens for a DataNegotiationEvent, when it receives it compares the local and external lists to find any differing entities.
@@ -572,11 +572,11 @@ The entities of the external list that are missing in the local list or have a n
 
 Then, it sends the DataNegotiationResult with the new entities, the existing entities, and the external issuer to the DataTransferJob.
 
-##### 2.2.3. Data Transfer
+##### 2.2.4. Data Transfer
 The out of sync entities are requested from the external access node and the integrity of the data is verified again with hashes.
 > NOTE: Nodes can implement data segmentation to optimize the transfer specially with network with high latency or low
 > connection velocity.
-###### 2.2.3.1 Local access node
+###### 2.2.4.1. Local access node
 ![Data Synchronization 5](images/use-case-data-synchronization-4-transfer.png)
 
 In the Data Transfer, the External Access Node, receives a DataNegotiationResult with the new entities to sync, the 
@@ -668,7 +668,7 @@ If only entities are updated it receives a 204 No Content response.
 
 Finally, the DataTransferJob, sends the entities list to the DataVerificationJob.
 
-###### 2.2.3.2 External access node
+###### 2.2.4.2. External access node
 ![Data Synchronization 6](images/use-case-data-synchronization-4-external_transfer.png)
 
 In the Data Transfer, the External Access Node, receives a DataNegotiationResult with the new entities to sync, the
