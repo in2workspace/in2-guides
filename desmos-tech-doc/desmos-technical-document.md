@@ -338,7 +338,7 @@ Multiple known nodes must be configured, but at least one needs to be the DOME M
 
 ##### 2.2.3. Data Negotiation
 ###### 2.2.3.1 Local access node
-![Data Synchronization 2](images/use-case-data-synchronization-2-discovery.png)
+![Data Synchronization 2](images/use-case-data-synchronization-3-negotiation.png)
 
 The goal of the Data Negotiation process is to make our entities known to the external access nodes and obtain a list of
 data of the entities of each external access node.
@@ -422,7 +422,7 @@ If the Access Node is available,
 and the Participant has the permissions,
 it sends a 202 Accepted response with a payload containing their minimum viable entities for data negotiation list.
 
-DiscoverySyncResponse:
+This is a non-normative example of a `DiscoverySyncResponse`:
 
 ```plaintext
 HTTP/1.1 202 ACCEPTED
@@ -535,7 +535,7 @@ If the Access Node is available,
 and the Participant has the permissions,
 it sends a 202 Accepted response with a payload containing their minimum viable entities for data negotiation list.
 
-DiscoverySyncResponse:
+This is a non-normative example of a `DiscoverySyncResponse`:
 
 ```plaintext
 HTTP/1.1 202 ACCEPTED
@@ -567,6 +567,7 @@ Cache-Control: no-store
 
 ###### 2.2.3.1 Data Negotiation Event
 ![Data Negotiation 3](images/p2p-sync-discovery-data-negotiation.png)
+
 DataNegotiationJob listens for a DataNegotiationEvent, when it receives it compares the local and external lists to find any differing entities.
 The entities of the external list that are missing in the local list or have a newer version or timestamp will be candidates for synchronization through the Access Node.
 It sends the DataNegotiationResult with the new entities and the existing entities to the DataTransferJob.
