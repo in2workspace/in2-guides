@@ -381,7 +381,7 @@ Cache-Control: no-store
 Upon receiving a 200 OK response,
 the Blockchain Connector posts the list of local minimum viable entities for data negotiation to every of the configured Access Nodes.
 
-This is a non-normative example of a `SyncDiscoveryRequest`:
+This is a non-normative example of a `DiscoverySyncRequest`:
 
 ```plaintext
 POST /sync/discovery HTTP/1.1
@@ -422,7 +422,7 @@ If the Access Node is available,
 and the Participant has the permissions,
 it sends a 202 Accepted response with a payload containing their minimum viable entities for data negotiation list.
 
-SyncDiscoveryResponse:
+DiscoverySyncResponse:
 
 ```plaintext
 HTTP/1.1 202 ACCEPTED
