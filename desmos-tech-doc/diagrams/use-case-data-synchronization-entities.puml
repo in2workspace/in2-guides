@@ -7,9 +7,9 @@ autonumber
 
 '---------- Header ----------------
 
-boundary "External Access Node" as ean
+boundary "Local Access Node" as lan
 
-box "Access Node"
+box "External Access Node"
 
   control "DataSyncController" as dsc
   participant "P2PDataSyncWorkflow" as p2p_dsw
@@ -21,9 +21,9 @@ end box
 
 '---------- Diagram ----------------
 
-ean -> dsc++: POST /sync/p2p/entities \nPayload: EntitySyncRequest
+lan -> dsc++: POST /sync/p2p/entities \nPayload: EntitySyncRequest
 
-note right of ean
+note right of lan
     EntitySyncRequest:
         List<Id> entityIds
     Id:
