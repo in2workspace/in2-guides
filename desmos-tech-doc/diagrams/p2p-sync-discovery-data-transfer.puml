@@ -13,7 +13,6 @@ box "External Access Node"
   participant "DataNegotiationJob" as dnj
   participant "DataTransferJob" as dtj
   participant "DataVerificationJob" as dvj
-
 end box
 
 '---------- Diagram ----------------
