@@ -395,7 +395,7 @@ Authorization: <bearer_access_token>
     
 {
   "issuer" : "https://my-domain.org",
-  "external_entity_ids" : [
+  "external_minimum_viable_entities_for_data_negotiation_list" : [
     { 
       "id" : "urn:ProductOffering:d86735a6-0faa-463d-a872-00b97affa1cb",
       "type": "ProductOffering",
@@ -435,7 +435,7 @@ Cache-Control: no-store
 
 {
   "issuer": "https://<configured-access-node>.org",
-  "external_entity_ids": [
+  "external_minimum_viable_entities_for_data_negotiation_list": [
     { 
       "id" : "urn:ProductOffering:537e1ee3-0556-4fff-875f-e55bb97e7ab0",
       "type": "ProductOffering",
@@ -473,7 +473,7 @@ Authorization: <bearer_access_token>
     
 {
   "issuer" : "https://my-domain.org",
-  "external_entity_ids" : [
+  "external_minimum_viable_entities_for_data_negotiation_list" : [
     { 
       "id" : "urn:ProductOffering:537e1ee3-0556-4fff-875f-e55bb97e7ab0",
       "type": "ProductOffering",
@@ -548,7 +548,7 @@ Cache-Control: no-store
 
 {
   "issuer": "https://<configured-access-node>.org",
-  "external_entity_ids": [
+  "external_minimum_viable_entities_for_data_negotiation_list": [
     { 
       "id" : "urn:ProductOffering:d86735a6-0faa-463d-a872-00b97affa1cb",
       "type": "ProductOffering",
