@@ -42,10 +42,10 @@ end note
     data_sync_Controller -> p2p_data_sync_workflow++: dataDiscovery()
         p2p_data_sync_workflow -> p2p_data_sync_job++: dataDiscovery()
             p2p_data_sync_job -> cb++: GET /ngsi-ld/v1/entities\n  ?type=ProductOffering\n  &attrs=lastUpdate,version
-            return 200 OK - Payload: List<EntityDTO>
+            return 200 OK - Payload: List<MVEntity4DataNegotiation>
             p2p_data_sync_job -> ac: PublishDataNegotiationEvent
-        return List<EntityDTO>
-    return List<EntityDTO>
-return 200 OK - Payload: List<EntityDTO>
+        return List<MVEntity4DataNegotiation>
+    return List<MVEntity4DataNegotiation>
+return 200 OK - Payload: List<MVEntity4DataNegotiation>
 
 @enduml
