@@ -1,0 +1,74 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+'---------- Config ----------------
+
+autonumber
+
+'---------- Header ----------------
+
+boundary "Local Access Node" as lan
+
+box "External Access Node"
+
+  participant "DataTransferJob" as dtj
+  participant "DataNegotiationJob" as dnj
+  participant "BrokerPublisher" as bp
+  participant "AuditRecordService" as ars
+  participant "Context Broker" as cb
+
+end box
+
+'---------- Diagram ----------------
+
+note over lan, cb
+    Verification
+end note
+
+    dtj -> dnj++: verifyData(List<Entities>)
+        loop forEach Entity
+            dnj -> ars++: findLatestAuditRecordForEntity(EntityId)
+            return EntityAuditRecord
+            dnj -> dnj++: validateConsistency(Entity, EntityAuditRecord)
+                alt no audit record
+                    note right of dnj
+                        My new AuditRecord hashlink value needs to
+                        the same as the hashlink value received from the externalEntityList
+                    end note
+                else audit record exists
+                    note right of dnj
+                        If my audit record hashlink value + retrievedEntityHash
+                        equals the hashlink value received from the externalEntityList
+                        then the entity is consistent
+                    end note
+                end
+            return
+
+            dnj -> ars++: buildAndSaveAuditRecordFromDataSync(Entity)
+                note right of ars
+                    We are acting as a Consumer here.
+                    Status = "RETRIEVED"
+                    dataLocation = ""
+                end note
+                return
+        end
+
+
+        dnj -> bp++: upsertEntitiesToBroker(List<Entities>)
+            bp -> cb++: POST /ngsi-ld/v1/entityOperations/upsert Payload: entities_list
+            return 201 Created
+        bp --> dnj: success/failure
+
+        loop forEach Entity
+            dnj -> ars++: buildAndSaveAuditRecordFromDataSync(Entity)
+            note right of ars
+                We are acting as a Consumer here.
+                Status = "PUBLISHED"
+                dataLocation = ""
+            end note
+            return
+        end
+    return
+return
+
+@enduml

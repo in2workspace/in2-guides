@@ -1,0 +1,44 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+skinparam BoxPadding 10
+
+' -------------------- Headers -------------------- '
+
+actor "Operator" as operator
+
+box "Local Access Node" #LightBlue
+    control "DataSyncController" as p2p_data_sync_controller
+    control "Scheduler" as scheduler
+    control "Bootstrapping" as bootstrapping
+    participant "P2PDataSyncJob" as p2p_data_sync_job
+end box
+
+
+' -------------------- Diagram -------------------- '
+
+activate p2p_data_sync_job
+activate bootstrapping
+activate scheduler
+activate p2p_data_sync_controller
+
+note over operator, p2p_data_sync_job
+    Completion
+end note
+
+alt "Bootstrapping"
+    p2p_data_sync_job --> bootstrapping: Done
+    deactivate bootstrapping
+else "Scheduler"
+    p2p_data_sync_job --> scheduler: Done
+    deactivate scheduler
+else "DataSyncController"
+    p2p_data_sync_job --> p2p_data_sync_controller: Done
+    deactivate p2p_data_sync_job
+    p2p_data_sync_controller --> operator: 200 OK
+    deactivate p2p_data_sync_controller
+end
+
+
+@enduml

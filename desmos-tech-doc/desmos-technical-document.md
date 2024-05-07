@@ -23,11 +23,25 @@ editor: "Oriol Canadés"
     * [2. Subscriptions Setup](#2-subscriptions-setup)
       * [2.1 Broker Subscription](#21-broker-subscription)
       * [2.2 DLT Subscription](#22-dlt-subscription)
-  * [Use Case 2 — Data Synchronization](#use-case-2--data-synchronization)
-    * [1. Triggering Data Synchronization](#1-triggering-data-synchronization)
-    * [2. Discovery](#2-discovery)
-    * [3. Synchronization](#3-synchronization)
-    * [4. Completion](#4-completion)
+* [Use Case 2 — Data Synchronization](#use-case-2--data-synchronization)
+  + [1.Introduction](#1introduction)
+  + [2. Data Synchronization Process](#2-data-synchronization-process)
+    * [2.1. Triggering Data Synchronization](#21-triggering-data-synchronization)
+    * [2.2. P2PDataSyncJob](#22-p2pdatasyncjob)
+      * [2.2.1. Data Synchronization](#221-data-synchronization)
+        * [2.2.2.1. Peer Discovery](#2211-peer-discovery)
+        * [2.2.2.2. Set Connection](#2212-set-connection)
+        * [2.2.2.3. Data Negotiation](#2213-data-negotiation)   
+        * [2.2.2.4. Data Transfer](#2214-data-transfer)  
+        * [2.2.2.5. Data Verification](#2215-data-verification)  
+        * [2.2.2.6. Closing connection](#2216-closing-connection)
+        * [2.2.2.7. Completion](#2217-completion)
+      * [2.2.2. Discovery Synchronization](#221-data-synchronization) 
+          * [2.2.2.1. Data Negotiation](#2221-data-negotiation)
+            * [2.2.2.1.1. Data Negotiation](#22211-data-negotiation-event)
+          * [2.2.2.2. Data Transfer](#2222-data-transfer)
+          * [2.2.2.3. Data Verification](#2223-data-verification) 
+      * [2.2.3. Entities Synchronization](#223-entities-synchronization) 
   * [Use Case 3 — Publisher: Create and publish data to the blockchain](#use-case-3--publisher-create-and-publish-data-to-the-blockchain)
     * [1. Receiving the Broker Notification](#1-receiving-the-broker-notification)
     * [2. Building the data object to be published](#2-building-the-data-object-to-be-published)
@@ -292,34 +306,59 @@ If both subscriptions are successfully created, the service can proceed to the d
 
 ## Use Case 2 — Data Synchronization
 
-This is a proposal to solve the DOME Data sSynchronization process.
+This is a proposal to solve the DOME Data Synchronization process.
 We will assume that the source of truth is the catalog with all their information, not the blockchain.
 
-### 1. Triggering Data Synchronization
+### 1.Introduction
+
+Desmos offers two ways to synchronize entities:
+
+* **Blockchain connection**: The local access node retrieves all data from the blockchain using the blockchain connector.
+* **P2PDataSyncJob**: The local access node retrieves entities from configured external access nodes, among which one
+  need to be the DOME Marketplace node.
+
+### 2. Data Synchronization Process
+
+#### 2.1. Triggering Data Synchronization
 
 ![Data Synchronization 1](images/use-case-data-synchronization-1-triggering.png)
 
 The Data Synchronization process can be triggered in three ways:
 
 * **Start/Restart**: Upon an application start or restart, an event (`ApplicationReadyEvent.class`) triggers the Data
-  Synchronization process.
+  Synchronization process. P2PDataSyncJob will be used as synchronization way to prevent
+  Blockchain connection synchronization from slowing down the start of the application.
 
+* **Scheduled Task**: A Cron job is set up to automatically trigger the Data Synchronization process at a specific time,
+  for example, at 2:00 AM daily. The synchronization will be done using both blockchain connection and P2PDataSyncJob.
 
 * **Operator**: An operator can manually initiate the Data Synchronization process by sending a GET request
   to `/sync/data`.
 
+> NOTE: It hasn't yet been decided which synchronization method will use the operator trigger.
 
-* **Scheduled Task**: A Cron job is set up to automatically trigger the Data Synchronization process at a specific time,
-  for example, at 2:00 AM daily.
+#### 2.2. P2PDataSyncJob
+##### 2.2.1. Data Synchronization
 
-### 2. Discovery
+###### 2.2.1.1. Peer Discovery
+Multiple known nodes must be configured, but at least one needs to be the DOME Marketplace node.
+> TODO: Every node needs to discover other nodes which are eligible to synchronize.
+> Peer discover can be done in a centralized way (P2P Hybrid) -> Trust Framework
 
-![Data Synchronization 2](images/use-case-data-synchronization-2-discovery.png)
+###### 2.2.1.2. Set Connection
+> TODO: Try to set direct connection. (Need to negotiate communication protocols, exchange keys to verify the identity of
+> the node, etc.)
 
-The Data Synchronization process begins with a discovery step
-where it sends a GET request to /ngsi-ld/v1/entities/ with a query parameter.
+###### 2.2.1.3. Data Negotiation
+![Data Synchronization 2](images/use-case-data-synchronization-3-negotiation.png)
 
-The query parameter helps to retrieve the list of local entity IDs that are stored in the local Context Broker,
+The goal of the Data Negotiation process is to make our local entities known to the external access nodes and to obtain a list of
+data of the entities of each external access node.
+
+The process begins with a discovery step where it sends a GET request to /ngsi-ld/v1/entities/ with a query parameter.
+
+The query parameter helps to retrieve the list of local minimum viable entities for data negotiation, that are stored in
+the local Context Broker,
 not the full entity data.
 
 This is a non-normative example of a `EntitiesDiscoveryRequest` and `EntitiesDiscoveryResponse`:
@@ -336,15 +375,25 @@ Content-Type: application/json
 Cache-Control: no-store
 
 [
-  { "id" : "urn:productOffering:d86735a6-0faa-463d-a872-00b97affa1cb" },
-  { "id" : "urn:productOffering:ed9c56c8-a5ab-42cc-bc62-0fca69a30c87" }
+    {
+        "id": "urn:ProductOffering:d86735a6-0faa-463d-a872-00b97affa1cb",
+        "type": "ProductOffering",
+        "version": "v1.2",
+        "lastUpdate": "2024-04-01T12:00:00Z"
+    },
+    {
+        "id": "urn:ProductOffering:ed9c56c8-a5ab-42cc-bc62-0fca69a30c87",
+        "type": "ProductOffering",
+        "version": "v5.4",
+        "lastUpdate": "2024-02-24T12:00:00Z"
+    }
 ]
 ```
 
 Upon receiving a 200 OK response,
-the Blockchain Connector posts the list of local entity IDs to every of the configured Access Nodes.
+the Blockchain Connector posts the list of local minimum viable entities for data negotiation to every of the configured Access Nodes.
 
-This is a non-normative example of a `SyncDiscoveryRequest`:
+This is a non-normative example of a `DiscoverySyncRequest`:
 
 ```plaintext
 POST /sync/discovery HTTP/1.1
@@ -354,9 +403,23 @@ Authorization: <bearer_access_token>
     
 {
   "issuer" : "https://my-domain.org",
-  "external_entity_ids" : [
-    {"id" : "urn:productOffering:d86735a6-0faa-463d-a872-00b97affa1cb"},
-    {"id" : "urn:productOffering:ed9c56c8-a5ab-42cc-bc62-0fca69a30c87"}
+  "external_minimum_viable_entities_for_data_negotiation_list" : [
+    { 
+      "id" : "urn:ProductOffering:d86735a6-0faa-463d-a872-00b97affa1cb",
+      "type": "ProductOffering",
+      "version": "v1.2",
+      "lastUpdate": "2024-04-01T12:00:00Z",
+      "hash: "89e62d6be87fd39dc19dc69a35d58d1ac2351854bf48a8264bf075643c89eddf",
+      "hashlink: "8ce0461d10e02556d3f16e21c8ac662c037f8b39efd059186b070f9aad8c00f0"
+    },
+    { 
+      "id" : "urn:ProductOffering:ed9c56c8-a5ab-42cc-bc62-0fca69a30c87",
+      "type": "ProductOffering",
+      "version": "v5.4",
+      "lastUpdate": "2024-02-24T12:00:00Z",      
+      "hash: "08b236983ba01bbcd268793b104917f89f0bba8160d2f693911087c72b9a8051",
+      "hashlink: "8bc17b3e9f6e3d54e3f5b63e4a8826a28bba7d03d0f46c7a79b1f4d13eb4ee2f"
+    }
   ]
 }
 ```
@@ -369,9 +432,9 @@ Authorization: <bearer_access_token>
 
 If the Access Node is available,
 and the Participant has the permissions,
-it sends a 202 Accepted response with a payload containing their entity IDs list.
+it sends a 202 Accepted response with a payload containing their minimum viable entities for data negotiation list.
 
-SyncDiscoveryResponse:
+This is a non-normative example of a `DiscoverySyncResponse`:
 
 ```plaintext
 HTTP/1.1 202 ACCEPTED
@@ -380,22 +443,44 @@ Cache-Control: no-store
 
 {
   "issuer": "https://<configured-access-node>.org",
-  "external_entity_ids": [
-    {"id" : "urn:productOffering:537e1ee3-0556-4fff-875f-e55bb97e7ab0"},
-    {"id" : "urn:productOffering:ed9c56c8-a5ab-42cc-bc62-0fca69a30c87"}
+  "external_minimum_viable_entities_for_data_negotiation_list": [
+    { 
+      "id" : "urn:ProductOffering:537e1ee3-0556-4fff-875f-e55bb97e7ab0",
+      "type": "ProductOffering",
+      "version": "v9.2",
+      "lastUpdate": "2023-10-05T12:00:00Z",      
+      "hash: "8bc17b3e9f6e3d54e3f5b63e4a8826a28bba7d03d0f46c7a79b1f4d13eb4ee2f",
+      "hashlink: "41332f3abafca9295930699a271b4e63de1acc166efe032bf04a6038fb18e8a8"
+    },
+    { 
+      "id" : "urn:ProductOffering:ed9c56c8-a5ab-42cc-bc62-0fca69a30c87",
+      "type": "ProductOffering",
+      "version": "v5.4",
+      "lastUpdate": "2024-02-24T12:00:00Z",      
+      "hash: "08b236983ba01bbcd268793b104917f89f0bba8160d2f693911087c72b9a8051",
+      "hashlink: "8bc17b3e9f6e3d54e3f5b63e4a8826a28bba7d03d0f46c7a79b1f4d13eb4ee2f"
+    }
   ]
 }
 ```
 
-### 3. Synchronization
+Then, it sends the DataNegotiationResult with the new entities, the existing entities, and the external issuer to the DataTransferJob.
 
-![Data Synchronization 3](images/use-case-data-synchronization-3-sync.png)
+###### 2.2.1.4. Data Transfer
+![Data Synchronization 5](images/use-case-data-synchronization-4-transfer.png)
 
-When the system has both lists, it compares the local and external lists to find any differing entities.
-The entities of the external list
-that are missing in the local list will be candidates for synchronization through the Access Node.
+The out of sync entities are requested from the external access node and the integrity of the data is verified again with hashes.
+> NOTE: Nodes can implement data segmentation to optimize the transfer specially with network with high latency or low
+> connection velocity.
 
-This is a non-normative example of an EntitySyncRequest:
+The DataTransferJob, receives a DataNegotiationResult with the new entities to sync, the 
+existing entities to sync and the external issuer.
+
+The Local Access Node request each access node their missing and outdated entities.
+
+> TODO: Nodes can implement data segmentation to optimize the transfer specially with networks with high latency or low connection velocity.
+
+This is a non-normative example of an `EntitySyncRequest`:
 
 ```plaintext
 POST /sync/entities HTTP/1.1
@@ -404,7 +489,7 @@ Content-Type: application/json
 Authorization: <bearer_access_token>
     
 [
-  {"id" : "urn:productOffering:537e1ee3-0556-4fff-875f-e55bb97e7ab0"}
+  {"id" : "urn:ProductOffering:537e1ee3-0556-4fff-875f-e55bb97e7ab0"}
 ]
 ```
 
@@ -416,7 +501,7 @@ Authorization: <bearer_access_token>
 
 The configured Access Node processes the request and retrieves the entity, ProductOffering, and the entity's
 relationships from the local Context Broker.
-Then, it creates a response with de detailed data requested.
+Then, it creates a response with the detailed data requested.
 
 This is a non-normative example of a `EntitySyncResponse` with the detailed data requested:
 
@@ -427,20 +512,24 @@ Cache-Control: no-store
 
 [
   {
-    "id": "urn:productOffering:537e1ee3-0556-4fff-875f-e55bb97e7ab0",
-    "type": "productOffering",
+    "id": "urn:ProductOffering:537e1ee3-0556-4fff-875f-e55bb97e7ab0",
+    "type": "ProductOffering",
+    "version": "v9.2",
+    "lastUpdate": "2023-10-05T12:00:00Z"
     "productSpecification": {
       "id": "spec-broadband-001",
       "name": "1Gbps Broadband Spec"
     },
     "productOfferingPrice": {
       "type": "Relationship",
-      "object": "urn:productOfferingPrice:912efae1-7ff6-4838-89f3-cfedfdfa1c5a"
+      "object": "urn:ProductOfferingPrice:912efae1-7ff6-4838-89f3-cfedfdfa1c5a"
     }
   },
   {
-    "id": "urn:productOfferingPrice:912efae1-7ff6-4838-89f3-cfedfdfa1c5a",
-    "type": "productOfferingPrice",
+    "id": "urn:ProductOfferingPrice:912efae1-7ff6-4838-89f3-cfedfdfa1c5a",
+    "type": "ProductOfferingPrice",    
+    "version": "v2.1",
+    "lastUpdate": "2023-10-09T12:00:00Z"
     "name": "Monthly Subscription Fee",
     "priceType": "recurring",
     "price": {
@@ -461,24 +550,427 @@ The response contains the entity ProductOffering and the entity's relationships 
 > This is not happening within the current pub-sub mechanism through the blockchain because we implement a hashlink to
 > ensure the integrity of the entity.
 
-The local Blockchain Connector processes the response, that means, before publishing any entity, it checks if the entity
-exists in the local Context Broker.
+The local node verifies the entities integrity using the hash, if all are correct it sends a POST request to upsert the 
+missing and outdated entities in the Context Broker.
 
-If the entity exists, it sends a PATCH request to update the entity and receives a 204 No Content response.
+If one or more entities are created it receives a 201 Created response.
 
-If the entity does not exist, it sends a POST request to create the entity and receives a 201 Created response.
-
-This process continues until all entities have been synchronized.
+If only entities are updated it receives a 204 No Content response.
 
 > NOTE: Bear in mind that all entities processed by the Blockchain Connector have their own audit records, although they
 > are not explained in this diagram.
 
-### 4. Completion
+Finally, the DataTransferJob, sends the entities list to the DataVerificationJob.
 
-![Data Synchronization 4](images/use-case-data-synchronization-4-completion.png)
+###### 2.2.1.5. Data Verification
+![Data Synchronization 7](images/use-case-data-synchronization-5-verification.png)
+
+The local node validate the consistency of the data received. If data is valid, it will be published to the local 
+context broker.
+
+The DataVerificationJob finds the latest audit record for entity and to validate the consistency of every entity.
+For a new entity, it validates that the hashlink needs to be the same as the hashlink value received from the external 
+entity list and for an existing entity, the audit record hashlink received from the external entity list must be 
+equal to the audit record hashlink value + the hash received from the external entity list.
+
+Then it saves the retrieved audit record for all the entities, upserts the entities to the context broker, and it saves
+the published audit record for all the entities.
+
+This is a non-normative example of a `EntitiesUpsertRequest` and `EntitiesUpsertResponse`:
+```plaintext
+POST /ngsi-ld/v1/entityOperations/upsert HTTP/1.1
+Host: context-broker.org
+Content-Type: application/json
+
+[
+    {
+        "id": "urn:ProductOffering:d86735a6-0faa-463d-a872-00b97affa1cb",
+        "type": "ProductOffering",
+        "version": "v1.2",
+        "lastUpdate": "2024-04-01T12:00:00Z"
+    },
+    {
+        "id": "urn:ProductOffering:ed9c56c8-a5ab-42cc-bc62-0fca69a30c87",
+        "type": "ProductOffering",
+        "version": "v5.4",
+        "lastUpdate": "2024-02-24T12:00:00Z"
+    }
+]
+```
+
+```plaintext
+HTTP/1.1 201 Created
+Content-Type: application/json
+Cache-Control: no-store
+```
+
+###### 2.2.1.6. Closing connection
+> TODO: The node will close the connection for security purposes.
+
+###### 2.2.1.7. Completion
+
+![Data Synchronization 9](images/use-case-data-synchronization-7-completion.png)
 
 Once the synchronization is complete, the system marks the process as done.
 
+##### 2.2.2. Discovery Synchronization
+###### 2.2.2.1 Data Negotiation
+![Data Synchronization 3](images/use-case-data-synchronization-3-external_negotiation_1.png)
+In the Data Negotiation, the External Access Node, receives a POST request to /sync/p2p/discovery, with the
+minimum viable entities for data negotiation.
+
+This is a non-normative example of a `DiscoverySyncRequest`:
+
+```plaintext
+POST /sync/discovery HTTP/1.1
+Host: <configured-access-node>
+Content-Type: application/json
+Authorization: <bearer_access_token>
+    
+{
+  "issuer" : "https://my-domain.org",
+  "external_minimum_viable_entities_for_data_negotiation_list" : [
+    { 
+      "id" : "urn:ProductOffering:537e1ee3-0556-4fff-875f-e55bb97e7ab0",
+      "type": "ProductOffering",
+      "version": "v9.2",
+      "lastUpdate": "2023-10-05T12:00:00Z",      
+      "hash: "8bc17b3e9f6e3d54e3f5b63e4a8826a28bba7d03d0f46c7a79b1f4d13eb4ee2f",
+      "hashlink: "41332f3abafca9295930699a271b4e63de1acc166efe032bf04a6038fb18e8a8"
+    },
+    { 
+      "id" : "urn:ProductOffering:ed9c56c8-a5ab-42cc-bc62-0fca69a30c87",
+      "type": "ProductOffering",
+      "version": "v5.4",
+      "lastUpdate": "2024-02-24T12:00:00Z",      
+      "hash: "08b236983ba01bbcd268793b104917f89f0bba8160d2f693911087c72b9a8051",
+      "hashlink: "8bc17b3e9f6e3d54e3f5b63e4a8826a28bba7d03d0f46c7a79b1f4d13eb4ee2f"
+    }    
+  ]
+}
+```
+
+> NOTE: The IAM grants the permissions to start a synchronization process at the top of the Access Node.
+> The requester
+> MUST be a registered DOME Participant to start a synchronization process and get the list of external entity IDs.
+> This
+> endpoint is not public.
+
+Then, the External Access Node sends a GET request to /ngsi-ld/v1/entities/ with a query parameter.
+
+The query parameter helps to retrieve the list of local minimum viable entities for data negotiation, that are stored in
+the local Context Broker,
+not the full entity data.
+
+This is a non-normative example of a `EntitiesDiscoveryRequest` and `EntitiesDiscoveryResponse`:
+
+```plaintext
+GET /ngsi-ld/v1/entities/ HTTP/1.1
+Host: context-broker.org
+Content-Type: application/json
+```
+
+```plaintext
+HTTP/1.1 200 OK
+Content-Type: application/json
+Cache-Control: no-store
+
+[
+    {
+        "id": "urn:ProductOffering:d86735a6-0faa-463d-a872-00b97affa1cb",
+        "type": "ProductOffering",
+        "version": "v1.2",
+        "lastUpdate": "2024-04-01T12:00:00Z"
+    },
+    {
+        "id": "urn:ProductOffering:ed9c56c8-a5ab-42cc-bc62-0fca69a30c87",
+        "type": "ProductOffering",
+        "version": "v5.4",
+        "lastUpdate": "2024-02-24T12:00:00Z"
+    }
+]
+```
+
+Upon receiving a 200 OK response, the Access Node publishes an event with the received data, and return a 200 OK with the received context broker data.
+
+Finally it sends a 202 Accepted response with a payload containing their minimum viable entities for data negotiation list.
+
+This is a non-normative example of a `DiscoverySyncResponse`:
+
+```plaintext
+HTTP/1.1 202 ACCEPTED
+Content-Type: application/json
+Cache-Control: no-store
+
+{
+  "issuer": "https://<configured-access-node>.org",
+  "external_minimum_viable_entities_for_data_negotiation_list": [
+    { 
+      "id" : "urn:ProductOffering:d86735a6-0faa-463d-a872-00b97affa1cb",
+      "type": "ProductOffering",
+      "version": "v1.2",
+      "lastUpdate": "2024-04-01T12:00:00Z",
+      "hash: "89e62d6be87fd39dc19dc69a35d58d1ac2351854bf48a8264bf075643c89eddf",
+      "hashlink: "8ce0461d10e02556d3f16e21c8ac662c037f8b39efd059186b070f9aad8c00f0"
+    },
+    { 
+      "id" : "urn:ProductOffering:ed9c56c8-a5ab-42cc-bc62-0fca69a30c87",
+      "type": "ProductOffering",
+      "version": "v5.4",
+      "lastUpdate": "2024-02-24T12:00:00Z",      
+      "hash: "08b236983ba01bbcd268793b104917f89f0bba8160d2f693911087c72b9a8051",
+      "hashlink: "8bc17b3e9f6e3d54e3f5b63e4a8826a28bba7d03d0f46c7a79b1f4d13eb4ee2f"
+    }
+  ]
+}
+```
+
+###### 2.2.2.1.1 Data Negotiation Event
+![Data Synchronization 4](images/use-case-data-synchronization-3-external_negotiation_2.png)
+
+DataNegotiationJob listens for a DataNegotiationEvent, when it receives it compares the local and external lists to find any differing entities.
+The entities of the external list that are missing in the local list or have a newer version or timestamp will be candidates for synchronization through the Access Node.
+
+Then, it sends the DataNegotiationResult with the new entities, the existing entities, and the external issuer to the DataTransferJob.
+
+###### 2.2.2.2 Data Transfer
+![Data Synchronization 6](images/use-case-data-synchronization-4-external_transfer.png)
+
+The DataTransferJob, receives a DataNegotiationResult with the new entities to sync, the
+existing entities to sync and the external issuer.
+
+The access node, request the entities to the issuer and receive it.
+
+> TODO: Nodes can implement data segmentation to optimize the transfer specially with networks with high latency or low connection velocity.
+
+This is a non-normative example of an `EntitySyncRequest`:
+
+```plaintext
+POST /sync/entities HTTP/1.1
+Host: <configured-access-node>
+Content-Type: application/json
+Authorization: <bearer_access_token>
+    
+[
+  {"id" : "urn:ProductOffering:537e1ee3-0556-4fff-875f-e55bb97e7ab0"}
+]
+```
+
+> NOTE: The IAM grants the permissions to start a synchronization process at the top of the Access Node.
+> The requester needs to have permissions to retrieve the requested entities from the Access Node.
+
+> TODO: How the IAM knows if the requester has permissions to retrieve not only the entity whether the entity's
+> relationships from the Access Node?
+
+The configured Access Node processes the request and retrieves the entity, ProductOffering, and the entity's
+relationships from the local Context Broker.
+Then, it creates a response with the detailed data requested.
+
+This is a non-normative example of a `EntitySyncResponse` with the detailed data requested:
+
+```plaintext
+HTTP/1.1 202 ACCEPTED
+Content-Type: application/json
+Cache-Control: no-store
+
+[
+  {
+    "id": "urn:ProductOffering:537e1ee3-0556-4fff-875f-e55bb97e7ab0",
+    "type": "ProductOffering",
+    "version": "v9.2",
+    "lastUpdate": "2023-10-05T12:00:00Z"
+    "productSpecification": {
+      "id": "spec-broadband-001",
+      "name": "1Gbps Broadband Spec"
+    },
+    "productOfferingPrice": {
+      "type": "Relationship",
+      "object": "urn:ProductOfferingPrice:912efae1-7ff6-4838-89f3-cfedfdfa1c5a"
+    }
+  },
+  {
+    "id": "urn:ProductOfferingPrice:912efae1-7ff6-4838-89f3-cfedfdfa1c5a",
+    "type": "ProductOfferingPrice",    
+    "version": "v2.1",
+    "lastUpdate": "2023-10-09T12:00:00Z"
+    "name": "Monthly Subscription Fee",
+    "priceType": "recurring",
+    "price": {
+      "amount": "49.99",
+      "currency": "USD"
+    },
+    "recurringChargePeriod": "monthly"
+  }
+]
+```
+
+The response contains the entity ProductOffering and the entity's relationships ProductOfferingPrice in a same response.
+
+> TODO: In this scenario, we cannot guarantee the integrity of the entity's relationships.
+> We need to define a mechanism to ensure the integrity of the entity's relationships,
+> such as the entity's relationships hash.
+>
+> This is not happening within the current pub-sub mechanism through the blockchain because we implement a hashlink to
+> ensure the integrity of the entity.
+
+The local node verifies the entities integrity using the hash, if all are correct it sends a POST request to upsert the
+missing and outdated entities in the Context Broker.
+
+If one or more entities are created it receives a 201 Created response.
+
+If only entities are updated it receives a 204 No Content response.
+
+> NOTE: Bear in mind that all entities processed by the Blockchain Connector have their own audit records, although they
+> are not explained in this diagram.
+
+Finally, the DataTransferJob, sends the entities list to the DataVerificationJob.
+
+###### 2.2.2.3. Data Verification
+![Data Synchronization 8](images/use-case-data-synchronization-5-external_verification.png)
+
+The DataVerificationJob finds the latest audit record for entity and to validate the consistency of every entity.
+For a new entity, it validates that the hashlink needs to be the same as the hashlink value received from the external
+entity list and for an existing entity, the audit record hashlink received from the external entity list must be
+equal to the audit record hashlink value + the hash received from the external entity list.
+
+Then it saves the retrieved audit record for all the entities, upserts the entities to the context broker, and it saves
+the published audit record for all the entities.
+
+This is a non-normative example of a `EntitiesUpsertRequest` and `EntitiesUpsertResponse`:
+```plaintext
+POST /ngsi-ld/v1/entityOperations/upsert HTTP/1.1
+Host: context-broker.org
+Content-Type: application/json
+
+[
+    {
+        "id": "urn:ProductOffering:d86735a6-0faa-463d-a872-00b97affa1cb",
+        "type": "ProductOffering",
+        "version": "v1.2",
+        "lastUpdate": "2024-04-01T12:00:00Z"
+    },
+    {
+        "id": "urn:ProductOffering:ed9c56c8-a5ab-42cc-bc62-0fca69a30c87",
+        "type": "ProductOffering",
+        "version": "v5.4",
+        "lastUpdate": "2024-02-24T12:00:00Z"
+    }
+]
+```
+
+```plaintext
+HTTP/1.1 201 Created
+Content-Type: application/json
+Cache-Control: no-store
+```
+
+##### 2.2.3. Entities Synchronization
+![Data Synchronization 9](images/use-case-data-synchronization-entities.png)
+
+In the Entity Synchronization, the External Access Node, receives a POST request to /sync/p2p/entities, with the
+list of the requested ids.
+
+This is a non-normative example of an `EntitySyncRequest`:
+
+```plaintext
+POST /sync/entities HTTP/1.1
+Host: <configured-access-node>
+Content-Type: application/json
+Authorization: <bearer_access_token>
+    
+[
+  {"id" : "urn:ProductOffering:537e1ee3-0556-4fff-875f-e55bb97e7ab0"}
+]
+```
+
+> NOTE: The IAM grants the permissions to start a synchronization process at the top of the Access Node.
+> The requester needs to have permissions to retrieve the requested entities from the Access Node.
+
+> TODO: How the IAM knows if the requester has permissions to retrieve not only the entity whether the entity's
+> relationships from the Access Node?
+
+The DataSyncController calls the P2PDataSyncWorkflow to get the local entities.
+The BrokerPublisherService for each id, sends a GET request to /ngsi-ld/v1/entities/ with the id, to get the entity.
+
+This is a non-normative example of a `EntityGetRequest` and `EntityGetResponse`:
+
+```plaintext
+GET /ngsi-ld/v1/entities/urn:ProductOffering:537e1ee3-0556-4fff-875f-e55bb97e7ab0 HTTP/1.1
+Host: context-broker.org
+Content-Type: application/json
+```
+
+```plaintext
+HTTP/1.1 200 OK
+Content-Type: application/json
+Cache-Control: no-store
+
+{
+    "id": "urn:ProductOffering:537e1ee3-0556-4fff-875f-e55bb97e7ab0",
+    "type": "ProductOffering",
+    "version": "v9.2",
+    "lastUpdate": "2023-10-05T12:00:00Z"
+    "productSpecification": {
+      "id": "spec-broadband-001",
+      "name": "1Gbps Broadband Spec"
+    },
+    "productOfferingPrice": {
+      "type": "Relationship",
+      "object": "urn:ProductOfferingPrice:912efae1-7ff6-4838-89f3-cfedfdfa1c5a"
+    }
+}
+```
+
+The BrokerPublisherService recursively searches the entity relationships and the relationships of its relationships
+until no more nested relations are found and finally it returns all the entities and their nested relationship entities.
+
+
+This is a non-normative example of a `EntitySyncResponse` with the detailed data requested:
+
+```plaintext
+HTTP/1.1 202 ACCEPTED
+Content-Type: application/json
+Cache-Control: no-store
+
+[
+  {
+    "id": "urn:ProductOffering:537e1ee3-0556-4fff-875f-e55bb97e7ab0",
+    "type": "ProductOffering",
+    "version": "v9.2",
+    "lastUpdate": "2023-10-05T12:00:00Z"
+    "productSpecification": {
+      "id": "spec-broadband-001",
+      "name": "1Gbps Broadband Spec"
+    },
+    "productOfferingPrice": {
+      "type": "Relationship",
+      "object": "urn:ProductOfferingPrice:912efae1-7ff6-4838-89f3-cfedfdfa1c5a"
+    }
+  },
+  {
+    "id": "urn:ProductOfferingPrice:912efae1-7ff6-4838-89f3-cfedfdfa1c5a",
+    "type": "ProductOfferingPrice",    
+    "version": "v2.1",
+    "lastUpdate": "2023-10-09T12:00:00Z"
+    "name": "Monthly Subscription Fee",
+    "priceType": "recurring",
+    "price": {
+      "amount": "49.99",
+      "currency": "USD"
+    },
+    "recurringChargePeriod": "monthly"
+  }
+]
+```
+
+The response contains the entity ProductOffering and the entity's relationships ProductOfferingPrice in a same response.
+
+> TODO: In this scenario, we cannot guarantee the integrity of the entity's relationships.
+> We need to define a mechanism to ensure the integrity of the entity's relationships,
+> such as the entity's relationships hash.
+>
+> This is not happening within the current pub-sub mechanism through the blockchain because we implement a hashlink to
+> ensure the integrity of the entity.
 
 <div style="page-break-before: always;"></div>
 
@@ -516,7 +1008,7 @@ Content-Type: application/json
   "type": "ProductOffering",
   "data": [
     {
-      "id": "urn:productOffering:123",
+      "id": "urn:ProductOffering:123",
       "name": "1Gbps Broadband"
     }
   ],
@@ -574,7 +1066,7 @@ This is a non-normative example of an EntityDataPoint:
   "iss": "0x8dyl...68da8s",
   "entityId": "0x0fyt...m1d9fr",
   "previousEntityHash": "0x6r1f...sd5u7b",
-  "dataLocation": "https://cb.example.com/ngsi-ld/v1/entities/urn:productOffering:123?hl=0x7ff6...m1rh4r",
+  "dataLocation": "https://cb.example.com/ngsi-ld/v1/entities/urn:ProductOffering:123?hl=0x7ff6...m1rh4r",
   "relevantMetadata": [
     "0x5of6...m13sur"
   ]
@@ -614,7 +1106,7 @@ This is a non-normative example of an AggregatedEvent:
       "entityType": "ProductOffering",
       "entityId": "0x0fyt...m1d9fr",
       "previousEntityHash": "0x6r1f...sd5u7b",
-      "dataLocation": "https://cb.example.com/ngsi-ld/v1/entities/urn:productOffering:123?hl=0x7ff6...m1rh4r",
+      "dataLocation": "https://cb.example.com/ngsi-ld/v1/entities/urn:ProductOffering:123?hl=0x7ff6...m1rh4r",
       "relevantMetadata": [
         "0x5of6...m13sur"
       ]
@@ -624,7 +1116,7 @@ This is a non-normative example of an AggregatedEvent:
       "entityType": "ProductOffering",
       "entityId": "0x0fyt...m1d9fr",
       "previousEntityHash": "0x6r1f...sd5u7b",
-      "dataLocation": "https://cb.example.com/ngsi-ld/v1/entities/urn:productOffering:123?hl=0x7ff6...m1rh4r",
+      "dataLocation": "https://cb.example.com/ngsi-ld/v1/entities/urn:ProductOffering:123?hl=0x7ff6...m1rh4r",
       "relevantMetadata": [
         "0x5of6...m13sur"
       ]
@@ -814,7 +1306,7 @@ Non-normative example of an AggregatedTxPayload:
       "entityType": "ProductOffering",
       "entityId": "0x0000000000000000000000000000000000000000000000000000000000000000",
       "previousEntityHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-      "dataLocation": "https://dome-marktplace.org/ngsi-ld/v1/entities/urn:productOffering:12wsbuissbxibxiubx?hl=0x0000000000000000000000000000000000000000000000000000000000000000",
+      "dataLocation": "https://dome-marktplace.org/ngsi-ld/v1/entities/urn:ProductOffering:12wsbuissbxibxiubx?hl=0x0000000000000000000000000000000000000000000000000000000000000000",
       "relevantMetadata": [
         "0x0000000000000000000000000000000000000000000000000000000000000000",
         "0x0000000000000000000000000000000000000000000000000000000000000000"
@@ -825,7 +1317,7 @@ Non-normative example of an AggregatedTxPayload:
       "entityType": "ProductOffering",
       "entityId": "0x0000000000000000000000000000000000000000000000000000000000000000",
       "previousEntityHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-      "dataLocation": "https://dome-marktplace.org/ngsi-ld/v1/entities/urn:productOffering:12wsbuissbxibxiubx?hl=0x0000000000000000000000000000000000000000000000000000000000000000",
+      "dataLocation": "https://dome-marktplace.org/ngsi-ld/v1/entities/urn:ProductOffering:12wsbuissbxibxiubx?hl=0x0000000000000000000000000000000000000000000000000000000000000000",
       "relevantMetadata": [
         "0x0000000000000000000000000000000000000000000000000000000000000000",
         "0x0000000000000000000000000000000000000000000000000000000000000000"

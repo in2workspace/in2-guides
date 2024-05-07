@@ -1,0 +1,59 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+'---------- Config ----------------
+
+autonumber
+
+'---------- Header ----------------
+
+boundary "Local Access Node" as lan
+
+box "External Access Node"
+
+  control "DataSyncController" as data_sync_Controller
+  participant "DataSyncWorkflow" as p2p_data_sync_workflow
+  participant "P2PDataSyncJob" as p2p_data_sync_job
+  queue "ApplicationContext" as ac
+  participant "Context Broker" as cb
+
+end box
+
+'---------- Diagram ----------------
+
+note over lan, cb
+    Negotiation
+end note
+
+lan -> data_sync_Controller++: POST /sync/p2p/discovery \nPayload: DiscoverySyncRequest
+
+note right of lan
+    DiscoverySyncRequest:
+
+    {
+        List<MvEntity4DataNegotiation> mvEntities4DataNegotiation ->
+            id, type,
+            version, lastUpdate
+            hash, and hashlink(as previousHash)
+        issuer
+    }
+
+    Hash is a SHA256 of the entity that is
+    created by the External Access Node
+    when the DiscoverySyncRequest is created.
+end note
+
+    data_sync_Controller -> p2p_data_sync_workflow++: dataDiscovery()
+        p2p_data_sync_workflow -> p2p_data_sync_job++: dataDiscovery()
+            p2p_data_sync_job -> cb++: GET /ngsi-ld/v1/entities\n  ?type=ProductOffering\n  &attrs=lastUpdate,version
+            return 200 OK - Payload: List<MVEntity4DataNegotiation>
+            p2p_data_sync_job -> ac: PublishDataNegotiationEvent
+        return List<MVEntity4DataNegotiation>
+    return List<MVEntity4DataNegotiation>
+return 200 OK - Payload: List<MVEntity4DataNegotiation>
+
+note over lan, cb
+    Transfer
+end note
+
+@enduml

@@ -1,0 +1,62 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+'---------- Config ----------------
+
+autonumber
+
+'---------- Header ----------------
+
+boundary "Local Access Node" as lan
+
+box "External Access Node"
+  queue "ApplicationContext" as ac
+  participant "DataNegotiationJob" as dnj
+  participant "DataTransferJob" as dtj
+
+
+end box
+
+'---------- Diagram ----------------
+
+note over lan, dtj
+    Negotiation
+end note
+
+ac -> dnj++: Notifies DataNegotiationEvent
+
+note right of dnj
+    @EventListener(DataNegotiationEvent)
+    negotiateDataSync(DataNegotiationEvent) {}
+
+    DataNegotiationEvent:
+    {
+        List<ExternalEntitiesDTO>,
+        List<LocalEntitiesDTO>,
+        ExternalIssuer
+    }
+end note
+
+dnj -> dnj: checkWhichExternalDataIsMissing()
+dnj -> dnj: checkVersionsAndTimestampsFromEntityIdMatched()
+dnj -> dnj: createDataNegotiationResult()
+note right of dnj
+    DataNegotiationResult:
+    {
+        List<NewEntitiesToSync>,
+        List<ExistingEntitiesToSync>,
+        ExternalIssuer
+    }
+
+    NewEntitiesToSync is a list of EntityIds of the
+    entities that are not present in the local database
+end note
+
+dnj -> dtj++: syncData(DataNegotiationResult)
+return
+
+note over lan, dtj
+    Transfer
+end note
+
+@enduml
