@@ -1,0 +1,64 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+box "Employee"
+    actor Person as u_person
+    participant Email as u_email
+end box
+
+box "Issuer"
+    participant "UI" as ui
+    participant "API" as api
+    participant "Authorization Server" as auth_server
+    database "Database" as db
+end box
+
+participant "SMTP Server" as smtp
+
+box "HR User"
+    participant Email as hr_email
+    actor Person as hr_person
+end box
+
+== User Access ==
+
+hr_person -> ui: Access Issuer Portal
+    ui -> auth_server: Redirect to Authorization Server
+        auth_server -> auth_server: Authenticates User with Digital Certificate
+    auth_server --> ui: User Authenticated
+    ui -> ui: Display Issuer Management dashboard
+
+== New Credential ==
+
+hr_person -> ui: Clicks on New Credential
+    ui -> ui: Display New Credential Form
+    hr_person -> ui: Inputs Credential Details
+
+    ui -> api: POST /api/v1/credentials \nBody: LEARCredentialEmployeeData
+        api -> auth_server: GET /api/v1/transaction-code
+            auth_server -> auth_server: Generate Transaction Code
+            auth_server -> auth_server: Save Transaction Code (in-memory)
+            auth_server --> api: 200 Ok Payload: Transaction Code
+            api -> api: Generate CredentialProcedure
+            note right of api
+                CredentialProcedure = {
+                    "credential" : LEARCredentialEmployeeData,
+                    "transaction_code" : Transaction Code
+                }
+            end note
+            api <-> db: Save CredentialProcedure
+            api -> smtp: Send email to "Employee"
+            note right of smtp
+                Email = {
+                    "to" : "Employee Email",
+                    "subject" : "Credential Creation",
+                    "body" : "Link to Issuer Credential + Transaction Code"
+                    "example: "https://issuer.com/credentials?transaction_code=1234"
+                }
+            end note
+    api --> ui: Credential Created
+    ui -> ui: Display Credential Created
+
+@enduml

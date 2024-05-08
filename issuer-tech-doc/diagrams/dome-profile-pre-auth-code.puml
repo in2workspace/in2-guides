@@ -1,0 +1,27 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+skinparam BoxPadding 10
+
+' -------------------- Headers -------------------- '
+
+participant "End-User" as user
+participant "Wallet" as wallet
+participant "Credential Issuer" as issuer
+
+' -------------------- Diagram -------------------- '
+
+user -> issuer: End-User provides information required for the issuance of a certain Credential
+return Credential Offer (Pre-Authorized Code)
+
+wallet <-> issuer: Obtains Issuer's Credential Issuer metadata
+user -> wallet: Interacts
+
+wallet -> issuer: Token Request (Pre-Authorized Code, tx_code)
+return Token Response (access_token)
+
+wallet -> issuer: Credential Request (access_token, proof(s))
+return Credential Response (credential(s) || transaction_id)
+
+@enduml

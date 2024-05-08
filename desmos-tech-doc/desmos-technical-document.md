@@ -23,18 +23,25 @@ editor: "Oriol Canadés"
     * [2. Subscriptions Setup](#2-subscriptions-setup)
       * [2.1 Broker Subscription](#21-broker-subscription)
       * [2.2 DLT Subscription](#22-dlt-subscription)
-* [Use Case 2 — Data Synchronization](#use-case-2--data-synchronization)
-  + [1.Introduction](#1introduction)
-  + [2. Data Synchronization Process](#2-data-synchronization-process)
-    * [2.1. Triggering Data Synchronization](#21-triggering-data-synchronization)
-    * [2.2. P2PDataSyncJob](#22-p2pdatasyncjob)
-      * [2.2.1. Peer Discovery](#221-peer-discovery)
-      * [2.2.2. Set Connection](#222-set-connection)
-      * [2.2.3. Data Negotiation](#223-data-negotiation)   
-      * [2.2.4. Data Transfer](#224-data-transfer)  
-      * [2.2.5. Data Verification](#225-data-verification)  
-      * [2.2.6. Closing connection](#226-closing-connection)
-      * [2.2.7. Completion](#227-completion)
+  * [Use Case 2 — Data Synchronization](#use-case-2--data-synchronization)
+    * [1.Introduction](#1introduction)
+    * [2. Data Synchronization Process](#2-data-synchronization-process)
+      * [2.1. Triggering Data Synchronization](#21-triggering-data-synchronization)
+      * [2.2. P2PDataSyncJob](#22-p2pdatasyncjob)
+        * [2.2.1. Peer Discovery](#221-peer-discovery)
+        * [2.2.2. Set Connection](#222-set-connection)
+        * [2.2.3. Data Negotiation](#223-data-negotiation)
+          * [2.2.3.1 Local access node](#2231-local-access-node)
+          * [2.2.3.2 External access node](#2232-external-access-node)
+          * [2.2.3.2.1 Data Negotiation Event](#22321-data-negotiation-event)
+        * [2.2.4. Data Transfer](#224-data-transfer)
+          * [2.2.4.1. Local access node](#2241-local-access-node)
+          * [2.2.4.2. External access node](#2242-external-access-node)
+        * [2.2.5. Data Verification](#225-data-verification)
+          * [2.2.5.1. Local Access Node](#2251-local-access-node)
+          * [2.2.5.2. External Access Node](#2252-external-access-node)
+        * [2.2.6. Closing connection](#226-closing-connection)
+        * [2.2.7. Completion](#227-completion)
   * [Use Case 3 — Publisher: Create and publish data to the blockchain](#use-case-3--publisher-create-and-publish-data-to-the-blockchain)
     * [1. Receiving the Broker Notification](#1-receiving-the-broker-notification)
     * [2. Building the data object to be published](#2-building-the-data-object-to-be-published)
@@ -68,9 +75,6 @@ Furthermore, Blockchain Connector interacts with external Context Brokers that a
 
 The events that are published are not the local stored entities, but the minimum data required to guarantee the retrieval of the original entity from the source. This is achieved by the use of the [cryptographic hyperlinks](https://w3c-ccg.github.io/hashlink/), also known as hashlink, and metadata attributes.
 
-
-<div style="page-break-before: always;"></div>
-
 # Abbreviations and Acronyms
 
 [//]: # (TODO: Define all the abbreviations and acronyms)
@@ -79,9 +83,6 @@ The events that are published are not the local stored entities, but the minimum
 |----------------------|-------------------------------|
 | DLT                  | Distributed Ledger Technology |
 |                      |                               |
-
-
-<div style="page-break-before: always;"></div>
 
 # Key Features
 
@@ -96,9 +97,6 @@ The Blockchain Connector is able to:
 * Resolve entity data pointers, retrieve the actual entity from their source, and write them to the local Context Broker.
 
 * Audit any process executed by the Blockchain Connector and write them to a local database.
-
-
-<div style="page-break-before: always;"></div>
 
 # Constraints and Assumptions
 
@@ -162,17 +160,11 @@ The Blockchain Connector is able to:
 
 > NOTE: At least one of the Blockchain Nodes configured MUST be the DOME Operator Access Node. The pointers to the Access Nodes are configured in the Access Node configuration.
 
-
-<div style="page-break-before: always;"></div>
-
 # Container View
 
 The Blockchain Connector has *relations* with the local Context Broker, the Blockchain Adapter/API, the local database, and the other Context Brokers of the federation.
 
 ![Blockchain Connector Container View](images/blockchain-connector-container-view.png)
-
-
-<div style="page-break-before: always;"></div>
 
 # Use Cases
 
