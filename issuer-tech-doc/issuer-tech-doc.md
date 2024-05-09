@@ -155,7 +155,6 @@ The `tx_code` created during the Credential Offer is sent to the Employee via em
 
 1. The Wallet fetches the Credential Offer executing tha parsed `credential_offer_uri`.
 
-
 This is a non-normative example of the Credential Offer Uri:
 
 ```curl
@@ -324,7 +323,9 @@ grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code
 &tx_code=123456
 ```
 
-2. The Credential Issuer validates the Token Request and sends the `Token Response` ([section 6.2](https://dome-marketplace.github.io/OpenID4VCI-DOMEprofile/openid-4-verifiable-credential-issuance-wg-draft.html#name-successful-token-response)) to the Wallet.
+2. The Credential Issuer validates the Token Request and sends the `Token Response` ([section 6.2](https://dome-marketplace.github.io/OpenID4VCI-DOMEprofile/openid-4-verifiable-credential-issuance-wg-draft.html#name-successful-token-response)) to the Wallet. 
+
+This is a non-normative example of the `Successful Token Response` ([section 6.2](https://dome-marketplace.github.io/OpenID4VCI-DOMEprofile/openid-4-verifiable-credential-issuance-wg-draft.html#name-successful-token-response)):
 
 ```curl
 HTTP/1.1 200 OK
@@ -350,11 +351,32 @@ Cache-Control: no-store
 }
 ```
    
+This is a non-normative example of the `Token Error Response` ([section 6.3](https://dome-marketplace.github.io/OpenID4VCI-DOMEprofile/openid-4-verifiable-credential-issuance-wg-draft.html#name-token-error-response)) with an error:
 
+```curl
+HTTP/1.1 400 Bad Request
+Content-Type: application/json
+Cache-Control: no-store
+
+{
+   "error": "invalid_request"
+}
+```
 
 ## 15. The Wallet sends a Credential Request to the Credential Issuer's Credential Endpoint. It contains the Access Token and the proof of possession of the private key of a key pair to which the Credential Issuer should bind the issued Credential to.
 
+1. The Wallet generates a `Credential Resquest` ([section 7.2](https://dome-marketplace.github.io/OpenID4VCI-DOMEprofile/openid-4-verifiable-credential-issuance-wg-draft.html#name-credential-request)). To do that, the Wallet needs:
+
+
+[//]: # (todo: add the detailed flow)
+   1. The Wallet creates a did:key to the Employee. This means the creation of a key pair, generating a DID, and storing the private key in a secure enclave such as HashiCorp Vault. 
+2. The Wallet creates a `proof` 
+3. The Wallet sends a Credential Request to the Credential Issuer's Credential Endpoint with the Access Token and the proof of possession of the private key of a key pair to which the Credential Issuer should bind the issued Credential to.
+
+
 ## 16. The Credential Issuer sends and emails to the HR Employee or Legal Representative to notify they have a new credential pending to be signed.
+
+1. The Credential Issuer sends an email to the HR Employee or Legal Representative to notify they have a new credential pending to be signed.
 
 ## 17. The HR Employee or Legal Representative reads the notification email. (out of scope)
 
@@ -362,15 +384,246 @@ Cache-Control: no-store
 
 ## 19. The HR Employee or Legal Representative retrieves the pending credentials.
 
+1. The Local Signature component gets the pending credentials from the Credential Issuer. This request requires attaching of an Authorization header with the Digital Certificate of the HR Employee or Legal Representative.
+
+This is a non-normative example of the request:
+
+[//]: # (todo: add the detailed flow)
+```curl
+GET /pending-credentials HTTP/1.1
+Host: local-signature.dome-marketplace.eu
+Authorization bearer access_token
+```
+
+The response is a list of pending credentials that the HR Employee or Legal Representative can sign.
+
+This is a non-normative example of the response:
+
+```curl
+HTTP/1.1 200 OK
+Content-Type: application/json
+Cache-Control: no-store
+
+{
+   "credentials": [
+      {
+         "credential": {
+           "id": "1f33e8dc-bd3b-4395-8061-ebc6be7d06dd",
+           "type": [
+             "VerifiableCredential",
+             "LEARCredentialEmployee"
+           ],
+           "credentialSubject": {
+             "mandate": {...},
+               "mandatee": {...},
+               "mandator": {...},
+               "power": [{...}, {...}]
+             }
+           },
+           "expirationDate": "2025-04-02 09:23:22.637345122 +0000 UTC",
+           "issuanceDate": "2024-04-02 09:23:22.637345122 +0000 UTC",
+           "issuer": "did:web:in2.es",
+           "validFrom": "2024-04-02 09:23:22.637345122 +0000 UTC"
+         }
+      },
+      {
+         "credential": {...}
+      }
+   ]
+}
+```
+
 ## 20. The HR Employee or Legal Representative selects one or more credentials to sign. (out of scope)
 
 ## 21. The Local Signature posts the signed credentials to the Credential Issuer.
 
+1. The Local Signature component signs the Credential and sends it back to the Credential Issuer. This request requires attaching of an Authorization header with the Digital Certificate of the HR Employee or Legal Representative.
+
+This is a non-normative example of the request:
+
+```curl
+POST /credentials HTTP/1.1
+Host: issuer.dome-marketplace.eu
+Authorization bearer access_token
+Content-Type: application/json
+
+{
+   "credentials": [
+      {
+         "credential": "eyJraWQiOiJkaWQ6ZXh...C_aZKPxgihac0aW9EkL1nOzM"
+      },
+      {
+         "credential": "YXNkZnNhZGZkamZqZGFza23....29tZTIzMjMyMzIzMjMy"
+      }
+   ]
+}
+```
+
 ## 22. The Credential Issuer sends an email to the Employee notifying that the Credential is ready to be retrieved.
+
+1. The Credential Issuer receives the signed Credentials from the Local Signature Component.
+2. The Credential Issuer validates the Authorization header.
+3. The Credential Issuer updates the `credential_encoded` of the Credential Procedure with the signed Credential and sets a new status of the Credential Issuance (VALID).
+4. The Credential Issuer updates the `vc` attribute of the Deferred Credential Metadata with the signed Credential.
+5. The Credential Issuer sends an email to the Employee notifying that the Credential is ready to be retrieved.
 
 ## 23. The Employee reads the email and accesses the Wallet.
 
 ## 24. The Wallet retrieves the Credential using a Deferred Credential Request (access_token, transaction_id).
+
+1. The Employee clicks on the button `Retrieve Credential` of the representation of the credential *not signed* of their wallet. 
+2. The Wallet sends a Deferred Credential Request to the Credential Issuer's Deferred Credential Endpoint with the Access Token and the Transaction ID.
+
+3. The Credential Issuer validates the Access Token and the Transaction ID
+   1. If the Access Token and the Transaction ID are valid, but the Credential is not ready, the Credential Issuer: 
+      1. burns the Transaction ID
+      2. generates a new Transaction ID
+      3. persists the Transaction ID in memory
+      4. updates the Deferred Transaction Metadata
+      5. returns a Deferred Response with the new Transaction ID 
+   2. If the Access Token and the Transaction ID are valid and the Credential is ready, the Credential Issuer:
+      1. retrieves the Credential from the Credential Procedure
+      2. returns a Deferred Response with the Credential
+
+4. The Wallet receives the Deferred Response and retrieves the Credential and stores it in the Wallet.
+
+
+
+# Data Model
+
+## LEAR Credential Employee
+
+This is a non-normative example of the LEAR Credential Employee:
+
+```json
+{
+   "id": "1f33e8dc-bd3b-4395-8061-ebc6be7d06dd",
+   "type": [
+      "VerifiableCredential",
+      "LEARCredentialEmployee"
+   ],
+   "credentialSubject": {
+      "mandate": {
+         "id": "4e3c02b8-5c57-4679-8aa5-502d62484af5",
+         "life_span": {
+            "end_date_time": "2025-04-02 09:23:22.637345122 +0000 UTC",
+            "start_date_time": "2024-04-02 09:23:22.637345122 +0000 UTC"
+         },
+         "mandator": {
+            "commonName": "IN2",
+            "country": "ES",
+            "emailAddress": "rrhh@in2.es",
+            "organization": "IN2, Ingeniería de la Información, S.L.",
+            "organizationIdentifier": "VATES-B60645900",
+            "serialNumber": "B60645900"
+         },
+         "mandatee": {
+            "id": "did:key:zDnaeei6HxVe7ibR3mZmXa9SZgWs8UBj1FiTuwEKwmnChdUAu",
+            "email": "oriol.canades@in2.es",
+            "first_name": "Oriol",
+            "gender": "M",
+            "last_name": "Canadés",
+            "mobile_phone": "+34666336699"
+         },
+         "power": [
+            {
+               "id": "6b8f3137-a57a-46a5-97e7-1117a20142fb",
+               "tmf_action": "Execute",
+               "tmf_domain": "DOME",
+               "tmf_function": "Onboarding",
+               "tmf_type": "Domain"
+            },
+            {
+               "id": "ad9b1509-60ea-47d4-9878-18b581d8e19b",
+               "tmf_action": [
+                  "Create",
+                  "Update"
+               ],
+               "tmf_domain": "DOME",
+               "tmf_function": "ProductOffering",
+               "tmf_type": "Domain"
+            }
+         ]
+      }
+   },
+   "expirationDate": "2025-04-02 09:23:22.637345122 +0000 UTC",
+   "issuanceDate": "2024-04-02 09:23:22.637345122 +0000 UTC",
+   "issuer": "did:web:in2.es",
+   "validFrom": "2024-04-02 09:23:22.637345122 +0000 UTC"
+}
+```
+
+## Credential Procedure
+
+| Field                   | Type   | Required | Description                                         |
+|-------------------------|--------|----------|-----------------------------------------------------|
+| procedure_id            | UUID   | true     | The id of the Credential Procedure.                 |
+| credential_id           | UUID   | true     | The id of the Credential.                           |
+| credential_format       | String | true     | The format of the Credential.                       |
+| credential_status       | String | true     | The status of the Credential.                       |
+| credential_decoded      | JSON   | true     | The Credential in decoded format.                   |
+| credential_encoded      | String | true     | The Credential in encoded format.                   |
+| organization_identifier | String | true     | The identifier of the organization.                 |
+| updated_at              | Date   | true     | The date when the Credential Procedure was updated. |
+
+
+> NOTE: The `credential_status` can be one of the following values: `WITHDRAWN`, `ISSUED`, `VALID`, `REVOKED`, and `EXPIRED`.
+
+
+## Deferred Credential Metadata
+
+| Field             | Type   | Required | Description                                 |
+|-------------------|--------|----------|---------------------------------------------|
+| id                | UUID   | true     | The id of the Deferred Credential Metadata. |
+| transaction_code  | String | true     | The Transaction Code.                       |
+| auth_server_nonce | String | true     | The Pre-Authorized Code.                    |
+| transaction_id    | String | true     | The id of the Transaction.                  |
+| procedure_id      | UUID   | true     | The id of the Credential Procedure.         |
+| vc                | String | true     | The Credential in encoded format.           |
+| vc_format         | String | true     | The format of the Credential.               |
+
+# Credential Issuer - SaaS
+
+## 1. Credential Issuer: Home Page (landing page) - public - Front
+## 2. Credential Issuer: Log in | Sign up - public - Front, Auth Server
+## 3. Credential Issuer: Credential Management - private - Front, Back
+## 4. Credential Issuer: Create Credential - private - Front, Back
+## 5. Credential Issuer: Credential Offer - public - Front, Back
+## 6. Credential Wallet: Credentials Page - private - Front, Back
+
+2 Issuer: Log in | Sign up
+
+
+
+El Credential Issuer UI redirecciona al usuario al frontal del Keycloak --> endpoint por determinar
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
