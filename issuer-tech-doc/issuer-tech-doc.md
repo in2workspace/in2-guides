@@ -114,34 +114,243 @@ This is a non-normative example of the link that the Employee will receive:
 ## 6. The Credential Issuer makes a Credential Offer and updates the Deferred Credential Metadata.
 
 1. The Credential Issuer makes a `Credential Offer`:
+
    1. The Credential Issuer fetches the Authorization Server to create a `pre-authorized_code`.
+
    2. The Credential Issuer creates a `tx_code`, which is a PIN that will be sent to the Employee via email.
+
 2. The Credential Offer updates the `Deferred Credential Metadata`. The `pre-authorized_code` is added to the Credential Procedure as `auth_server_nonce` attribute.
-3. The Credential Issuer builds a `Credential Offer Uri` ([section 4.1.3](https://dome-marketplace.github.io/OpenID4VCI-DOMEprofile/openid-4-verifiable-credential-issuance-wg-draft.html#name-sending-credential-offer-by-)). This URI is a link that points to the Credential Offer. This `credential_offer_uri` is displayed as a QR code.
+   
+## 7. The Credential Issuer sends the tx_code (PIN) to the Employee via email.
+
+The `tx_code` created during the Credential Offer is sent to the Employee via email. We will use a template to send the email to the Employee.
+
+## 8. The Credential Issuer displays a QR code.
+
+1. The Credential Issuer builds a `Credential Offer Uri` ([section 4.1.3](https://dome-marketplace.github.io/OpenID4VCI-DOMEprofile/openid-4-verifiable-credential-issuance-wg-draft.html#name-sending-credential-offer-by-)). This URI is a link that points to the Credential Offer. This `credential_offer_uri` is displayed as a QR code.
+
+   The Credential Offer Uri uses a `nonce` value to bind the Credential Offer with the Credential Offer Uri.
+
+   The `nonce` is saved as a key value in memory cache, and the Credential Offer as the value. This is burnt after the Credential Offer is retrieved by executing the Credential Offer Uri by the Wallet.
 
    This is a non-normative example of the Credential Offer Uri:
 
    ```text
-   credential_offer_uri=https%3A%2F%2Fserver%2Eexample%2Ecom%2Fcredential-offer.json
+       credential_offer_uri=https%3A%2F%2Fserver%2Eexample%2Ecom%2F84dr684f51jfdbj
    ```
-   
-[//]: # (todo: credential_offer_uri without json and nonce)
-
-## 7. The Credential Issuer sends the tx_code (PIN) to the Employee via email.
-
-## 8. The Credential Issuer displays a QR code.
 
 ## 9. The Employee accesses the Wallet with their credentials.
 
+1. The Employee opens the Wallet application on their device.
+2. The Employee logs in to the Wallet using their credentials (username and password).
+
 ## 10. The Employee scans the QR code with the Wallet.
+
+1. The Employee clicks on the button "Scan".
+2. The camera of the device is activated.
+3. The Employee scans the QR code displayed by the Credential Issuer.
+4. The Wallet reads the QR code content, interprets that it is a Credential Offer Uri, and executes the Credential Offer Uri.
 
 ## 11. The Wallet fetches the Credential Offer Uri.
 
+1. The Wallet fetches the Credential Offer executing tha parsed `credential_offer_uri`.
+
+
+This is a non-normative example of the Credential Offer Uri:
+
+```curl
+   GET /credential_offer/84dr684f51jfdbj HTTP/1.1
+   Host: issuer.dome-marketplace.eu
+   https://server.example.com/84dr684f51jfdbj
+```
+```curl
+   HTTP/1.1 200 OK
+   Content-Type: application/json
+   {
+      "credential_issuer": "https://credential-issuer.example.com",
+      "credential_configuration_ids": [
+         "UniversityDegree_LDP_VC"
+      ],
+      "grants": {
+      "urn:ietf:params:oauth:grant-type:pre-authorized_code": {
+         "pre-authorized_code": "adhjhdjajkdkhjhdj",
+         "tx_code": {}
+      }
+   }
+}
+```
+
 ## 12. The Wallet fetches the Credential Issuer's Metadata and the Authorization Server's Metadata.
+
+1. The Wallet fetches the Credential Issuer's Metadata ([section 11.2](https://dome-marketplace.github.io/OpenID4VCI-DOMEprofile/openid-4-verifiable-credential-issuance-wg-draft.html#name-credential-issuer-metadata)) creating a dynamic URL using the parameter `credential_issuer` and concatenating the path `/.well-known/openid-credential-issuer`.
+
+> NOTE: The communication with the Issuer Metadata Endpoint MUST use TLS.
+
+> NOTE: The request MUST be an HTTP request using GET method and the URL SHOULD NOT contain any query parameters.
+
+> NOTE: The Credential Issuer MUST return a JSON document compliant with this specification using the application/json media type and the HTTP Status Code 200.
+
+[//]: # (todo: decide which of two option to use)
+> NOTE: The Wallet is RECOMMENDED to send an Accept-Language Header in the HTTP GET request to indicate the language(s) preferred for display. It is up to the Credential Issuer whether to:
+>  * send a subset of the metadata containing internationalized display data for one or all of the requested languages and indicate returned languages using the HTTP Content-Language Header, or
+>  * ignore the Accept-Language Header and send all supported languages or any chosen subset.
+> 
+> The language(s) in HTTP Accept-Language and Content-Language Headers MUST use the values defined in [RFC3066].
+
+```curl
+GET /.well-known/openid-credential-issuer HTTP/1.1
+Host: issuer.dome-marketplace.eu
+Accept-Language: fr-ch, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5
+```
+
+This is a non-normative example of the Credential Issuer Metadata:
+
+```json
+{
+   "credential_issuer": "https://credential-issuer.example.com",
+   "authorization_servers": [ "https://server.example.com" ],
+   "credential_endpoint": "https://credential-issuer.example.com",
+   "batch_credential_endpoint": "https://credential-issuer.example.com/batch_credential",
+   "deferred_credential_endpoint": "https://credential-issuer.example.com/deferred_credential",
+   "credential_response_encryption": {
+      "alg_values_supported" : [
+         "ECDH-ES"
+      ],
+      "enc_values_supported" : [
+         "A128GCM"
+      ],
+      "encryption_required": false
+   },
+   "display": [
+      {
+         "name": "Example University",
+         "locale": "en-US"
+      },
+      {
+         "name": "Example Université",
+         "locale": "fr-FR"
+      }
+   ],
+   "credential_configurations_supported": {
+      "UniversityDegreeCredential": {
+         "format": "jwt_vc_json",
+         "scope": "UniversityDegree",
+         "cryptographic_binding_methods_supported": [
+            "did:example"
+         ],
+         "credential_signing_alg_values_supported": [
+            "ES256"
+         ],
+         "credential_definition":{
+            "type": [
+               "VerifiableCredential",
+               "UniversityDegreeCredential"
+            ],
+            "credentialSubject": {
+               "given_name": {
+                  "display": [
+                     {
+                        "name": "Given Name",
+                        "locale": "en-US"
+                     }
+                  ]
+               },
+               "family_name": {
+                  "display": [
+                     {
+                        "name": "Surname",
+                        "locale": "en-US"
+                     }
+                  ]
+               },
+               "degree": {},
+               "gpa": {
+                  "display": [
+                     {
+                        "name": "GPA"
+                     }
+                  ]
+               }
+            }
+         },
+         "proof_types_supported": {
+            "jwt": {
+               "proof_signing_alg_values_supported": [
+                  "ES256"
+               ]
+            }
+         },
+         "display": [
+            {
+               "name": "University Credential",
+               "locale": "en-US",
+               "logo": {
+                  "url": "https://university.example.edu/public/logo.png",
+                  "alt_text": "a square logo of a university"
+               },
+               "background_color": "#12107c",
+               "text_color": "#FFFFFF"
+            }
+         ]
+      }
+   }
+}
+```
+
+2. The Wallet fetches the Authorization Server's Metadata ([section 11.3](https://dome-marketplace.github.io/OpenID4VCI-DOMEprofile/openid-4-verifiable-credential-issuance-wg-draft.html#name-oauth-20-authorization-serv)) creating a dynamic URL using the parameter `credential_issuer` and concatenating the path `/.well-known/openid-configuration`.
+
+> NOTE: The Credential Issuer Metadata is offered by the Keycloak Plugin and the Authorization Server Metadata is offered by the Keycloak. Both are part of the same system.
 
 ## 13. The Employee interacts with the Wallet adding the tx_code received in the email.
 
+Previously to start the Token Request, the Employee must add the `tx_code` received in the email to the Wallet. 
+
+This is a security measure to ensure that the Employee is the one that has received the email and is the one that is interacting with the Wallet.
+
+1. The Wallet shows a modal to the Employee to add the `tx_code`.
+2. The Employee adds the `tx_code` to the Wallet.
+
 ## 14. The Wallet sends a Token Request to the Credential Issuer. The Token Request contains the Pre-Authorized Code obtained in the Credential Offer and the tx_code added by the Employee.
+
+1. The Wallet sends a Token Request to the Credential Issuer's Token Endpoint, retrieved from the Authorization Server Metadata info. The Token Request contains the Pre-Authorized Code obtained in the Credential Offer and the tx_code added by the Employee.
+
+```curl
+POST /token HTTP/1.1
+Host: issuer.dome-marketplace.eu
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code
+&pre-authorized_code=SplxlOBeZQQYbYS6WxSbIA
+&tx_code=123456
+```
+
+2. The Credential Issuer validates the Token Request and sends the `Token Response` ([section 6.2](https://dome-marketplace.github.io/OpenID4VCI-DOMEprofile/openid-4-verifiable-credential-issuance-wg-draft.html#name-successful-token-response)) to the Wallet.
+
+```curl
+HTTP/1.1 200 OK
+Content-Type: application/json
+Cache-Control: no-store
+
+{
+   "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6Ikp..sHQ",
+   "token_type": "bearer",
+   "expires_in": 86400,
+   "c_nonce": "tZignsnFbp",
+   "c_nonce_expires_in": 86400,
+   "authorization_details": [
+      {
+         "type": "openid_credential",
+         "credential_configuration_id": "LEARCredentialEmployee",
+         "credential_identifiers": [ 
+            "", 
+            "" 
+         ]
+      }
+   ]
+}
+```
+   
+
 
 ## 15. The Wallet sends a Credential Request to the Credential Issuer's Credential Endpoint. It contains the Access Token and the proof of possession of the private key of a key pair to which the Credential Issuer should bind the issued Credential to.
 
