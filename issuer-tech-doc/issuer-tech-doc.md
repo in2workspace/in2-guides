@@ -68,16 +68,18 @@ This is an overview of the flow. The following sections will explain in detail e
 
 # Detailed Flow
 
-[//]: # (todo: add the detailed flow)
-
 ## 1. The HR Employee or Legal Representative accesses the Credential Issuer Portal.
+
+1. The HR Employee or Legal Representative accesses the Credential Issuer Portal using a web browser.
+2. The Credential Issuer Portal shows the Home Page with the option to log in.
+3. The HR Employee or Legal Representative clicks on the `Log in | Sing up` button.
+4. The Credential Issuer redirects the HR Employee or Legal Representative to the Authorization Server, *a Keycloak implementation*.
 
 ## 2. The HR Employee or Legal Representative logs in to the Credential Issuer Portal using their Digital Certificate.
 
-1. The HR Employee or Legal Representative clicks on the button "Log in".
-2. The Credential Issuer redirects the HR Employee or Legal Representative to the Authorization Server (*a Keycloak implementation*) which request to the browser to attach a Digital Certificate which will be used to log in.
-3. The HR Employee or Legal Representative selects the Digital Certificate.
-4. The Authorization Server validates the Digital Certificate.
+1. The Authorization Server request to the browser to attach a Digital Certificate which will be used to log in or sign up.
+2. The HR Employee or Legal Representative selects the Digital Certificate.
+3. The Authorization Server validates the Digital Certificate.
    1. If the Digital Certificate is valid and is associated with a valid registered user, the Authorization Server redirects the HR Employee or Legal Representative to the Credential Issuer Portal.
    2. If the Digital Certificate is not valid, the Authorization Server shows an error message to the HR Employee or Legal Representative.
    3. If the Digital Certificate is valid but is not associated with a valid registered user, the Authorization Server starts the registration process for the HR Employee or Legal Representative. The registration process must include the validation of the Digital Certificate and the email address of the HR Employee or Legal Representative. 
@@ -114,11 +116,8 @@ This is a non-normative example of the link that the Employee will receive:
 ## 6. The Credential Issuer makes a Credential Offer and updates the Deferred Credential Metadata.
 
 1. The Credential Issuer makes a `Credential Offer`:
-
    1. The Credential Issuer fetches the Authorization Server to create a `pre-authorized_code`.
-
    2. The Credential Issuer creates a `tx_code`, which is a PIN that will be sent to the Employee via email.
-
 2. The Credential Offer updates the `Deferred Credential Metadata`. The `pre-authorized_code` is added to the Credential Procedure as `auth_server_nonce` attribute.
    
 ## 7. The Credential Issuer sends the tx_code (PIN) to the Employee via email.
