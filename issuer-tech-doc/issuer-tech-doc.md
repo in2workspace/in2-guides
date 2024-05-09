@@ -124,6 +124,8 @@ This is a non-normative example of the link that the Employee will receive:
    ```text
    credential_offer_uri=https%3A%2F%2Fserver%2Eexample%2Ecom%2Fcredential-offer.json
    ```
+   
+[//]: # (todo: credential_offer_uri without json and nonce)
 
 ## 7. The Credential Issuer sends the tx_code (PIN) to the Employee via email.
 
