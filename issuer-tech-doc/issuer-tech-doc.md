@@ -37,7 +37,7 @@ many possibilities to implement the Issuer, but we have decided the following fe
 
 The DOME Issuer implements the following flow for the issuance of a LEAR Credential to an employee of an organization:
 
-![Credential Issuance Flow](./images/dome-issuer-happy-path.png)
+![Credential Issuance Flow](./images/dome-issuer-flow-overview.png)
 
 1. The HR Employee or Legal Representative accesses the Credential Issuer Portal.
 2. The HR Employee or Legal Representative logs in to the Credential Issuer Portal using their Digital Certificate.
@@ -70,30 +70,96 @@ This is an overview of the flow. The following sections will explain in detail e
 
 [//]: # (todo: add the detailed flow)
 
-1. The HR Employee or Legal Representative accesses the Credential Issuer Portal.
-2. The HR Employee or Legal Representative logs in to the Credential Issuer Portal using their Digital Certificate.
-3. The HR Employee or Legal Representative registers a new LEAR Credential for a specific Employee of their organization using a form.
-4. The Credential Issuer notifies the Employee with the link needed to start the credential issuance process.
-5. The Employee accesses the Credential Issuer executing the link attached in the received email.
-6. The Credential Issuer makes a Credential Offer and updates the Credential Procedure.
-7. The Credential Issuer sends the tx_code (PIN) to the Employee via email.
-8. The Credential Issuer displays a QR code.
-9. The Employee accesses the Wallet with their credentials.
-10. The Employee scans the QR code with the Wallet.
-11. The Wallet fetches the Credential Offer Uri.
-12. The Wallet fetches the Credential Issuer's Metadata and the Authorization Server's Metadata.
-13. The Employee interacts with the Wallet adding the tx_code received in the email.
-14. The Wallet sends a Token Request to the Credential Issuer. The Token Request contains the Pre-Authorized Code obtained in the Credential Offer and the tx_code added by the Employee.
-15. The Wallet sends a Credential Request to the Credential Issuer's Credential Endpoint. It contains the Access Token and the proof of possession of the private key of a key pair to which the Credential Issuer should bind the issued Credential to.
-16. The Credential Issuer sends and emails to the HR Employee or Legal Representative to notify they have a new credential pending to be signed.
-17. The HR Employee or Legal Representative reads the notification email. (out of scope)
-18. The HR Employee or Legal Representative logs in to the Local Signature using their Digital Certificate. (out of scope)
-19. The HR Employee or Legal Representative retrieves the pending credentials.
-20. The HR Employee or Legal Representative selects one or more credentials to sign. (out of scope)
-21. The Local Signature posts the signed credentials to the Credential Issuer.
-22. The Credential Issuer sends an email to the Employee notifying that the Credential is ready to be retrieved.
-23. The Employee reads the email and accesses the Wallet.
-24. The Wallet retrieves the Credential using a Deferred Credential Request (access_token, transaction_id).
+## 1. The HR Employee or Legal Representative accesses the Credential Issuer Portal.
+
+## 2. The HR Employee or Legal Representative logs in to the Credential Issuer Portal using their Digital Certificate.
+
+1. The HR Employee or Legal Representative clicks on the button "Log in".
+2. The Credential Issuer redirects the HR Employee or Legal Representative to the Authorization Server (*a Keycloak implementation*) which request to the browser to attach a Digital Certificate which will be used to log in.
+3. The HR Employee or Legal Representative selects the Digital Certificate.
+4. The Authorization Server validates the Digital Certificate.
+   1. If the Digital Certificate is valid and is associated with a valid registered user, the Authorization Server redirects the HR Employee or Legal Representative to the Credential Issuer Portal.
+   2. If the Digital Certificate is not valid, the Authorization Server shows an error message to the HR Employee or Legal Representative.
+   3. If the Digital Certificate is valid but is not associated with a valid registered user, the Authorization Server starts the registration process for the HR Employee or Legal Representative. The registration process must include the validation of the Digital Certificate and the email address of the HR Employee or Legal Representative. 
+      1. If the Digital Certificate does not include the email address, the Authorization Server must request the email address to the HR Employee or Legal Representative.
+      2. If the email address is already registered, the Authorization Server must show an error message to the HR Employee or Legal Representative. 
+      3. If the email address is verified, the Authorization Server creates a new user and redirects the HR Employee or Legal Representative to the Credential Issuer Portal.
+
+## 3. The HR Employee or Legal Representative registers a new LEAR Credential for a specific Employee of their organization using a form.
+
+1. The Credential Issuer shows a form to the HR Employee or Legal Representative to register a new LEAR Credential Employee. The data related to the `Mandator` (HR Employee or Legal Representative) is pre-filled using the data from the Digital Certificate.
+2. The HR Employee or Legal Representative fills the form with the data of the Employee - `Mandatee` - that will receive the LEAR Credential.
+3. The HR Employee or Legal Representative sets the powers of representation that the Employee will have, for now `Onboarding` and `Product Offering`.
+4. The HR Employee or Legal Representative clicks on the button *Register LEAR Credential*.
+5. The Credential Issuer validates the data and creates a new LEAR Credential Employee. This LEAR Credential Employee has the final format, but the Cryptographic Binding is not set and the credential is not signed yet. 
+6. The Credential Issuer creates a new `Credential Procedure`. The Credential Procedure is in the status "WITHDRAWN" and has the Credential (*decoded - json format*).
+7. The Credential Issuer creates a new `Deferred Credential Metadata`. It includes the Transaction Code, as `transaction_code`, and the id of the Credential Procedure, `procedure_id`. This Transaction Code is a nonce that will be used to bind the Credential Offer with the Credential Request and to create the URI that will be sent to the Employee via email.
+
+## 4. The Credential Issuer notifies the Employee with the link needed to start the credential issuance process.
+
+1. When the Credential Issuer finishes the registration of the LEAR Credential Employee, it sends an email to the Employee with the link to start the credential issuance process. The link includes the Transaction Code as a query parameter.
+
+This is a non-normative example of the link that the Employee will receive:
+
+```text
+ https://issuer.dome-marketplace.eu/credentials?transaction_code=oaKazRN8I0IbtZ0C7JuMn5
+```
+
+## 5. The Employee accesses the Credential Issuer executing the link attached in the received email.
+
+1. The Employee reads the email and clicks on the link to start the process of receiving the LEAR Credential.
+2. The Employee is redirected to the Credential Issuer Portal.
+3. The Credential Issuer validates the `transaction_code` and retrieves the `Credential Procedure`.
+
+## 6. The Credential Issuer makes a Credential Offer and updates the Deferred Credential Metadata.
+
+1. The Credential Issuer makes a `Credential Offer`:
+   1. The Credential Issuer fetches the Authorization Server to create a `pre-authorized_code`.
+   2. The Credential Issuer creates a `tx_code`, which is a PIN that will be sent to the Employee via email.
+2. The Credential Offer updates the `Deferred Credential Metadata`. The `pre-authorized_code` is added to the Credential Procedure as `auth_server_nonce` attribute.
+3. The Credential Issuer builds a `Credential Offer Uri` ([section 4.1.3](https://dome-marketplace.github.io/OpenID4VCI-DOMEprofile/openid-4-verifiable-credential-issuance-wg-draft.html#name-sending-credential-offer-by-)). This URI is a link that points to the Credential Offer. This `credential_offer_uri` is displayed as a QR code.
+
+   This is a non-normative example of the Credential Offer Uri:
+
+   ```text
+   credential_offer_uri=https%3A%2F%2Fserver%2Eexample%2Ecom%2Fcredential-offer.json
+   ```
+
+## 7. The Credential Issuer sends the tx_code (PIN) to the Employee via email.
+
+## 8. The Credential Issuer displays a QR code.
+
+## 9. The Employee accesses the Wallet with their credentials.
+
+## 10. The Employee scans the QR code with the Wallet.
+
+## 11. The Wallet fetches the Credential Offer Uri.
+
+## 12. The Wallet fetches the Credential Issuer's Metadata and the Authorization Server's Metadata.
+
+## 13. The Employee interacts with the Wallet adding the tx_code received in the email.
+
+## 14. The Wallet sends a Token Request to the Credential Issuer. The Token Request contains the Pre-Authorized Code obtained in the Credential Offer and the tx_code added by the Employee.
+
+## 15. The Wallet sends a Credential Request to the Credential Issuer's Credential Endpoint. It contains the Access Token and the proof of possession of the private key of a key pair to which the Credential Issuer should bind the issued Credential to.
+
+## 16. The Credential Issuer sends and emails to the HR Employee or Legal Representative to notify they have a new credential pending to be signed.
+
+## 17. The HR Employee or Legal Representative reads the notification email. (out of scope)
+
+## 18. The HR Employee or Legal Representative logs in to the Local Signature using their Digital Certificate. (out of scope)
+
+## 19. The HR Employee or Legal Representative retrieves the pending credentials.
+
+## 20. The HR Employee or Legal Representative selects one or more credentials to sign. (out of scope)
+
+## 21. The Local Signature posts the signed credentials to the Credential Issuer.
+
+## 22. The Credential Issuer sends an email to the Employee notifying that the Credential is ready to be retrieved.
+
+## 23. The Employee reads the email and accesses the Wallet.
+
+## 24. The Wallet retrieves the Credential using a Deferred Credential Request (access_token, transaction_id).
 
 
 
