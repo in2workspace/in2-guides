@@ -618,6 +618,8 @@ This is a non-normative example of the LEAR Credential Employee:
 
 ![Wallet Credentials Page Mockup](./images/mockup/mockup-wallet-credential-page.png)
 
+# API and Contracts
+
 
 
 
