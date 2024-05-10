@@ -75,9 +75,6 @@ Furthermore, Blockchain Connector interacts with external Context Brokers that a
 
 The events that are published are not the local stored entities, but the minimum data required to guarantee the retrieval of the original entity from the source. This is achieved by the use of the [cryptographic hyperlinks](https://w3c-ccg.github.io/hashlink/), also known as hashlink, and metadata attributes.
 
-
-<div style="page-break-before: always;"></div>
-
 # Abbreviations and Acronyms
 
 [//]: # (TODO: Define all the abbreviations and acronyms)
@@ -86,9 +83,6 @@ The events that are published are not the local stored entities, but the minimum
 |----------------------|-------------------------------|
 | DLT                  | Distributed Ledger Technology |
 |                      |                               |
-
-
-<div style="page-break-before: always;"></div>
 
 # Key Features
 
@@ -103,9 +97,6 @@ The Blockchain Connector is able to:
 * Resolve entity data pointers, retrieve the actual entity from their source, and write them to the local Context Broker.
 
 * Audit any process executed by the Blockchain Connector and write them to a local database.
-
-
-<div style="page-break-before: always;"></div>
 
 # Constraints and Assumptions
 
@@ -169,17 +160,11 @@ The Blockchain Connector is able to:
 
 > NOTE: At least one of the Blockchain Nodes configured MUST be the DOME Operator Access Node. The pointers to the Access Nodes are configured in the Access Node configuration.
 
-
-<div style="page-break-before: always;"></div>
-
 # Container View
 
 The Blockchain Connector has *relations* with the local Context Broker, the Blockchain Adapter/API, the local database, and the other Context Brokers of the federation.
 
 ![Blockchain Connector Container View](images/blockchain-connector-container-view.png)
-
-
-<div style="page-break-before: always;"></div>
 
 # Use Cases
 
@@ -338,6 +323,7 @@ The Data Synchronization process can be triggered in three ways:
 > NOTE: It hasn't yet been decided which synchronization method will use the operator trigger.
 
 #### 2.2. P2PDataSyncJob
+
 ##### 2.2.1. Data Synchronization
 
 ###### 2.2.1.1. Peer Discovery
@@ -403,7 +389,7 @@ Authorization: <bearer_access_token>
     
 {
   "issuer" : "https://my-domain.org",
-  "external_minimum_viable_entities_for_data_negotiation_list" : [
+  "external_entity_ids" : [
     { 
       "id" : "urn:ProductOffering:d86735a6-0faa-463d-a872-00b97affa1cb",
       "type": "ProductOffering",

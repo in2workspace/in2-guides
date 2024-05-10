@@ -1,0 +1,58 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+skinparam BoxPadding 10
+
+' -------------------- Headers -------------------- '
+
+actor "End-User" as user
+participant "Wallet" as wallet
+participant "Issuer" as issuer
+
+' -------------------- Diagram -------------------- '
+
+note over user, issuer: Credential Offer
+
+user -> issuer++: Access Credential Issuer Portal
+user -> issuer: Login
+user -> issuer: Selects credential
+issuer -> issuer: Request CredentialOffer, \nreturns credential_offer_uri
+issuer -> issuer: Display QR code
+
+user -> wallet: Access Wallet
+user -> wallet: Login
+wallet -> issuer: Scan QR Code
+wallet -> wallet: Execute QR Content
+wallet -> wallet: Execute QR Content
+wallet -> issuer: Request CredentialOffer
+return CredentialOffer
+
+note over user, issuer: Discovery
+
+wallet -> issuer: Request CredentialIssuerMetadata
+return CredentialIssuerMetadata
+wallet -> issuer: Request AuthServerMetadata
+return AuthServerMetadata
+
+note over user, issuer: Token
+
+wallet -> issuer: Request AuthorizationRequest
+return AuthorizationResponse (code)
+wallet -> issuer: Request Token (code)
+return Token Response (access_token)
+
+note over user, issuer: Credential Request
+
+wallet -> issuer: Request CredentialRequest (access_token, proof)
+alt CredentialResponse (credential)
+    issuer --> wallet: CredentialResponse (verifiable credential)
+else CredentialResponse (deferred)
+    issuer --> wallet:  CredentialResponse (transaction_id)
+    wallet -> issuer: Request DeferredCredentialRequest (access_token, transaction_id)
+    issuer --> wallet: DeferredCredentialResponse (verifiable credential)
+end
+
+wallet -> wallet: Store Credential
+
+@enduml

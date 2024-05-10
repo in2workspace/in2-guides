@@ -1,0 +1,92 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+skinparam BoxPadding 10
+
+' -------------------- Headers -------------------- '
+
+box "Employee"
+    actor Person as u_person
+    participant Email as u_email
+    participant Wallet as wallet
+end box
+
+participant "Credential Issuer" as issuer
+
+box "HR Employee or Legal Representative"
+    participant "Local Signature" as local_signature
+    participant Email as hr_email
+    actor Person as hr_person
+end box
+
+' -------------------- Diagram -------------------- '
+
+note over u_person, hr_person: Set unsigned credential
+
+hr_person -[#00CC00]> issuer: Access Credential Issuer
+hr_person -[#00CC00]> issuer: Logs in with Digital Certificate
+hr_person -[#00CC00]> issuer: Creates a new Credential
+issuer -[#00CC00]> u_email: Sends Notification
+
+note over u_person, hr_person: Start Pre-Authorized Code Flow + Deferred Credential
+
+u_person -> u_email: Interacts
+autonumber stop
+u_email -> issuer: Redirects
+
+autonumber 6
+issuer -[#0000FF]> issuer: Makes Credential Offer
+issuer -[#00CC00]> u_email: Sends PIN Code
+issuer -[#0000FF]> issuer: Display QR Code
+u_person -> wallet: Interacts
+wallet <-[#0000FF]-> issuer: Scans QR Code
+
+wallet -[#0000FF]> issuer: Fetches Credential Offer Uri
+autonumber stop
+return Credential Offer
+
+autonumber 12
+wallet -[#0000FF]> issuer: Fetches Issuer Metadata
+autonumber stop
+return Credential Issuer Metadata, \nAuth Server Metadata
+
+autonumber 13
+wallet <--> u_person: Input PIN Code
+wallet -[#0000FF]> issuer: Request Token \n(pre-authorized_code, tx_code)
+autonumber stop
+return Token Response \n(access_token)
+
+autonumber 15
+wallet -[#0000FF]> issuer: Request Credential \n(access_token, proof)
+issuer -[#00CC00]> hr_email: Sends Notification
+autonumber stop
+issuer -[#0000FF]-> wallet: Credential Response \n(credential, transaction_id)
+note right issuer
+    The Credential Response accepts 'credential'
+    or 'transaction_id'. We decide to add both to
+    improve the readability of the credential in
+    the wallet. (section 7.3 OIDC4VCI)
+end note
+
+note over u_person, hr_person: Signing Credential with Local Signature
+
+autonumber 17
+hr_person -> hr_email: Interacts
+hr_person -> local_signature: Access Local Signature
+local_signature -[#00CC00]> issuer: Get credentials pending to sign \n(access_token)
+autonumber stop
+return Credential List \n(unsigned_credentials)
+autonumber 20
+local_signature -> local_signature: Sign Credential
+local_signature -[#00CC00]> issuer: Post Signed Credential \n(access_token, credential)
+issuer -[#00CC00]> u_email: Sends Notification
+
+note over u_person, hr_person: Retrieving Verifiable Credential
+
+u_person -> wallet: Interacts
+wallet -[#0000FF]> issuer: Request Deferred Credential \n(access_token, transaction_id)
+autonumber stop
+return Deferred Credential Response \n(credential)
+
+@enduml
