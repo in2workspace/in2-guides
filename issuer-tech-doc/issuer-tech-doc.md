@@ -102,9 +102,23 @@ This is an overview of the flow. The following sections will explain in detail e
    > NOTE: This LEAR Credential Employee has the final format, but the Cryptographic Binding is not set and the credential is not signed yet.
 6. The Credential Issuer creates a new `Credential Procedure` entity. The Credential Procedure is in the status `WITHDRAWN` and sets the attribute `credential_decoded` with the Credential received.
    > NOTE: The Credential Procedure is a way to manage the Credential Issuance process. It includes the Credential, the status of the Credential Issuance, and the organization identifier, etc. You can find more information about the Credential Procedure in the [Data Model - Credential Procedure](#credential-procedure) section.
+   
+   This is a non-normative example of the Credential Procedure:
+   ```json
+   {
+     "LearnCredentialProcedure": {
+       "id": "82ea95d1-4522-47bd-8e05-a1f699cab3a7",
+       "transaction_code": "oaKazRN8I0IbtZ0C7JuMn5",
+       "pre-auth_code": "",
+       "lear_credential_employee_json": { },
+       "status": "WITHDRAWN",
+       "updated": "2021-09-01T12:00:00Z"
+     }
+   }
+   ```
 7. The Credential Issuer creates a new `Deferred Credential Metadata`. It includes the Transaction Code, as `transaction_code`, and the id of the Credential Procedure, `procedure_id`. This Transaction Code is a nonce that will be used to bind the Credential Offer with the Credential Request and to create the URI that will be sent to the Employee via email.
    > NOTE: The Deferred Credential Metadata is a way to manage the metadata needed to manage the deferred process. It includes the Transaction Code, the Credential Procedure id, etc. You can find more information about the Deferred Credential Metadata in the [Data Model - Deferred Credential Metadata](#deferred-credential-metadata) section.
-   
+
 ## 4. The Credential Issuer notifies the Employee with the link needed to start the credential issuance process.
 
 1. When the Credential Issuer finishes the registration of the LEAR Credential Employee, it sends an email to the Employee with the link to start the credential issuance process. The link includes the Transaction Code as a query parameter. This is a non-normative example of the link that the Employee will receive:
@@ -154,7 +168,7 @@ The `tx_code` created during the Credential Offer is sent to the Employee via em
 
 ## 10. The Employee scans the QR code with the Wallet.
 
-1. The Employee clicks on the button "Scan".
+1. The Employee clicks on the button `Scan`.
 2. The camera of the device is activated.
 3. The Employee scans the QR code displayed by the Credential Issuer.
 4. The Wallet reads the QR code content, interprets that it is a Credential Offer Uri, and executes the Credential Offer Uri.
@@ -323,15 +337,15 @@ This is a security measure to ensure that the Employee is the one that has recei
 
 1. The Wallet sends a Token Request to the Credential Issuer's Token Endpoint, retrieved from the Authorization Server Metadata info. The Token Request contains the Pre-Authorized Code obtained in the Credential Offer and the tx_code added by the Employee.
 
-```curl
-POST /token HTTP/1.1
-Host: issuer.dome-marketplace.eu
-Content-Type: application/x-www-form-urlencoded
-
-grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code
-&pre-authorized_code=SplxlOBeZQQYbYS6WxSbIA
-&tx_code=123456
-```
+   ```curl
+   POST /token HTTP/1.1
+   Host: issuer.dome-marketplace.eu
+   Content-Type: application/x-www-form-urlencoded
+   
+   grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code
+   &pre-authorized_code=SplxlOBeZQQYbYS6WxSbIA
+   &tx_code=123456
+   ```
 
 2. The Credential Issuer validates the Token Request and sends the `Token Response` ([section 6.2](https://dome-marketplace.github.io/OpenID4VCI-DOMEprofile/openid-4-verifiable-credential-issuance-wg-draft.html#name-successful-token-response)) to the Wallet. 
 
@@ -379,7 +393,7 @@ Cache-Control: no-store
 
 
 [//]: # (todo: add the detailed flow)
-   1. The Wallet creates a did:key to the Employee. This means the creation of a key pair, generating a DID, and storing the private key in a secure enclave such as HashiCorp Vault. 
+   1. The Wallet creates a `did:key` to the Employee. This means the creation of a key pair, generating a DID, and storing the private key in a secure enclave such as HashiCorp Vault. 
 2. The Wallet creates a `proof` 
 3. The Wallet sends a Credential Request to the Credential Issuer's Credential Endpoint with the Access Token and the proof. This proof is the proof of possession of the private key of a key pair to which the Credential Issuer should bind the issued Credential to.
 
@@ -592,6 +606,14 @@ This is a non-normative example of the LEAR Credential Employee:
 | vc                | String | true     | The Credential in encoded format.           |
 | vc_format         | String | true     | The format of the Credential.               |
 
+
+# Formats
+
+## Date Format
+
+[//]: # (todo: add the standard date format decided by the team)
+
+
 # Credential Issuer - SaaS
 
 ## 1. Credential Issuer: Home Page (landing page) - public - Front
@@ -608,274 +630,194 @@ This is a non-normative example of the LEAR Credential Employee:
 
 ![Create Credential Mockup](./images/mockup/mockup-create-credential-page.png)
 
+## 5. Credential Issuer: Credential Details - private - Front, Back
+
 ![Create Credential Mockup](./images/mockup/mockup-create-credential-page-2.png)
 
-## 5. Credential Issuer: Credential Offer - public - Front, Back
+## 6. Credential Issuer: Credential Offer - public - Front, Back
 
 ![Credential Offer Mockup](./images/mockup/mockup-credential-offer-page.png)
 
-## 6. Credential Wallet: Credentials Page - private - Front, Back
+## 7. Credential Wallet: Credentials Page - private - Front, Back
 
 ![Wallet Credentials Page Mockup](./images/mockup/mockup-wallet-credential-page.png)
 
 # API and Contracts
 
+## 1. Credential Issuer: Credential Offer - public - Front, Back
 
+> NOTE: The `Log in or Sign up` button starts an OIDC protocol which uses the client configuration parameters to start the communication with the Keycloak instance. For further information, please refer to the [Keycloak documentation](https://www.keycloak.org/docs/latest/server_admin/index.html#_client-registration) and [Angular Auth OIDC Client](https://www.npmjs.com/package/angular-auth-oidc-client).
 
+## 2. Credential Issuer: Credential Management - private - Front, Back
 
+## 3. Credential Issuer: Create Credential - private - Front, Back
 
+### GetAllCredentialsByOrganization()
 
+[//]: # (todo: look for page and sorting parameters communication between front and back)
 
+This is a non-normative example of the request:
 
+```curl
+GET /api/v1/credentials HTTP/1.1
+Host: issuer.dome-marketplace.eu
+Authorization bearer eyJhbGciOiJSUzI1...NiIsInR5cCI6IkpsHQ
+```
 
+This is a non-normative example of the response:
 
+```curl
+HTTP/1.1 200 OK
+Content-Type: application/json
+Cache-Control: no-store
 
-
-
-
-
-
-
-
-
-
-2 Issuer: Log in | Sign up
-
-
-
-El Credential Issuer UI redirecciona al usuario al frontal del Keycloak --> endpoint por determinar
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1. The HR Employee or Legal Representative accesses the Credential Issuer Portal.
-2. The HR Employee or Legal Representative logs in to the Credential Issuer Portal using their Digital Certificate.
-3. The HR Employee or Legal Representative accesses the Credential Management page and clicks on "Create new credential".
-4. The HR Employee or Legal Representative registers a new LEAR Credential for a specific Employee of their organization using a form.
-5. The Credential Issuer generates a Transaction Code and binds it to the LEAR Credential through a Credential Procedure.
-6. The Credential Issuer notifies the Employee with the link needed to start the Pre-Authorized Code Flow.
-7. The Employee accesses the Credential Issuer executing the link attached in the received email.
-8. The Credential Issuer makes a Credential Offer and updates the Credential Procedure. 
-9. The Credential Issuer sends the tx_code to the Employee via email. 
-10. The Credential Issuer makes a Credential Offer Uri which is displayed as a QR code. 
-11. The Employee accesses the Wallet with their credentials and scans the QR code. 
-12. The Wallet reads the QR code content, executes the Credential Offer Uri, and retrieves the Credential Offer. 
-13. The Wallet fetches the Credential Issuer's metadata. 
-14. The Wallet fetches the Authorization Server's metadata. 
-15. The Wallet sends a Token Request to the Credential Issuer. Toke Request contains the Pre-Authorized Code obtained in the Credential Offer and the tx_code obtained in the email.
-16. The Credential Issuer validates the Token Request and sends the Token Response to the Wallet.
-17. The Wallet sends a Credential Request to the Credential Issuer's Credential Endpoint with the Access Token and the proof of possession of the private key of a key pair to which the Credential Issuer should bind the issued Credential to.
-18. The Credential Issuer validates the Access Token and the proof of possession. 
-19. The Credential Issuer updates the LEARCredentialEmployee with the DID of the Employee.
-20. The Credential Issuer updates the Credential Procedure with the Credential and sets a new status of the Credential Issuance (ISSUED).
-21. The Credential Issuer sends an email to the Employee with the information about the next steps to follow.
-22. The Credential Issuer generates the Transaction ID and stores it in memory.
-23. The Credential Issuer sends and emails to the HR Employee or Legal Representative to notify they have a new credential pending to be signed.
-24. The Credential Issuer sends the Credential (unsigned) and the Transaction ID to the Wallet.
-25. The Wallet stores the Credential and required data to retrieve it in the future (Access Token and Transaction ID).
-26. The HR Employee or Legal Representative accesses the Local Signatory. (out of scope)
-27. The HR Employee or Legal Representative logs in to the Local Signatory using their Digital Certificate. (out of scope)
-28. The HR Employee or Legal Representative retrieves the pending credentials.
-29. The HR Employee or Legal Representative selects one or more credentials to sign. (out of scope)
-30. The Local Signatory signs the Credential and sends it back to the Credential Issuer. (out of scope)
-31. The Credential Issuer updates the Credential Procedure with the signed Credential and sets a new status of the Credential Issuance (VALID).
-32. The Credential Issuer sends an email to the Employee notifying that the Credential is ready to be retrieved.
-33. The Employee accesses the Wallet and retrieves the Credential using a Credential Request (Access Token, Transaction ID).
-34. The Credential Issuer validates the Access Token and the Transaction ID and sends the Verifiable Credential to the Wallet.
-35. The Wallet stores the Verifiable Credential in the Wallet.
-
-
-# DOME Profile
-
-
-
-## Issuer
-
-- Exposes Credential Endpoint (section 7)
-- Exposes Deferred Credential Endpoint (section9)
-- Mechanism to make a Credential Offer (section 4)
-- Mechanism to publish Issuer Metadata
-
-> NOTE: Batch Endpoint is not implemented in the DOME Profile
-
-> NOTE: Deferred Credential Endpoint (Option) is implemented in DOME Profile (Required) because the LEAR Credential must be signed by the legal representative (a natural person) of the organization, and this requires the manual intervention of the legal representative to authorize the signature.
-
-> NOTE: The Credential Offer Mechanism makes a Credential Offer, but exposes credential_offer_uri as a QR code that has to be scanned by the Wallet of the End-User. This solution permits reducing the size of the QR code.
-
-> NOTE: Wallet Notification Mechanism is not implemented in the DOME Profile.
-
-> NOTE: DOME Profile requires that the LEAR Credential must implement the cryptographic binding of the DID of the employee in the credential.
-
-> NOTE: We only support issuance of a single Credential of a specific type (the LEAR Credential for a given employee) with a given Access Token.
-
-> NOTE: The unique format supported for the Credential is JWT.
-
-## Authorization Server
-
-> NOTE: The reference implementation of the issuer for LEAR Credentials has only one Authorization Server, and in addition, it is implemented in the Credential Issuer.
-
-> NOTE: We use the "Pre-Authorized Code" Grant Type. The reasons for this are:
->   - The claims in the LEAR Credential are essentially based on employee data coming from the HR database, and typically the issuance process is initiated by the company. The employee to act as LEAR is pre-selected and then credential offer is prepared in advance using that employee data. The employee is notified in advance via some off-line mechanism and also when the credential offer is ready. The employee then will request the actual issuance to her wallet using the mechanisms described in this document.
->   - With these considerations, the flows for issuance are simpler while maintaining the required level of security.
-> 
-> We do not use Client metadata, as we do not require the Issuer to know in advance the wallet that will be used in the process. The issuance process will use a QR code scanned by the wallet, so the Issuer does not use the credential_offer_endpoint of the wallet.
-> 
-> The LEAR Credential Issuer does not have to support the Authorization Endpoint because is uses the "Pre-Authorized Code" Grant Type.
-
-# Credential Issuance - DOME Profile (Tech. Spec from OIDC4VCI Draft 13)
-
-This document explains the technical specification for the Credential Issuance in the DOME Profile. The DOME Profile is a profile for the OIDC4VCI Draft 13 Protocol.
-
-DOME Profile Technical Decisions:
-
-- Implements Issuer Initiated
-- Implements Pre-Authorized Code Flow
-- Implements Same-Device or Cross-Device Credential Offer
-- Implements Immediate and Deferred
-
-
-
-## Credential Issuance - Pre-Authorized Code Flow
-
-In this section, we want to expose the flow for the Credential Issuance using the Pre-Authorized Code Flow.
-
-To understand the technical specification and how it could be implemented in the real world, we will use the following structure:
-
-* **Protocol explanation**: is the explanation that is part of the DOME Profile original specification document.
-* **Step**: The step that is how we implement the technical specification in the real world.
-* **Justification**: The justification for the technical decision made by the DOME Profile to the real world.
-
-![Credential Issuance - Pre-Authorized Code Flow](./images/dome-profile-pre-auth-code.png)
-
-> Protocol explanation: (1) The Credential Issuer successfully obtains consent and End-User data required for the issuance of a requested Credential from the End-User using an Issuer-specific business process.
-
-1. The End-User accesses the Credential Issuer Portal. (DOME + LEAR) --> Landing Page
-
-2. The End-User logs in to the Credential Issuer Portal. (DOME + LEAR)
-
-3. The End-User accesses the Credential Management page and clicks on "Create New Credential" 
-
-4. The End-User registers a new LEARCredentialEmployee (without cryptographic binding) for a specific Employee of their organization using a form. (LEAR)
-
-5. The Credential Issuer generates a Transaction Code and binds to the LEARCredentialEmployee though a LearCredentialProcedure. (LEAR)
-
-```json
 {
-  "LearnCredentialProcedure": {
-    "id": "82ea95d1-4522-47bd-8e05-a1f699cab3a7",
-    "transaction_code": "oaKazRN8I0IbtZ0C7JuMn5",
-    "pre-auth_code": "",
-    "lear_credential_employee_json": { },
-    "status": "WITHDRAWN",
-    "updated": "2021-09-01T12:00:00Z"
-  }
+   "credential_procedures": [
+      {
+         "credential_procedure": {
+            "procedure_id": "82ea95d1-4522-47bd-8e05-a1f699cab3a7",
+            "full_name": "Matt Smith",
+            "status": "withdrawn",
+            "updated": "2021-09-01T12:00:00Z"
+         }  
+      },
+      {
+         "credential_procedure": {...}
+      }
+   ]
 }
 ```
 
-5. The Credential Issuer notifies the Employee with the Credential Issuer URI needed to start the Pre-Authorized Code Flow. (LEAR)
+## 4. Credential Issuer: Create Credential - private - Front, Back
 
-https://issuer.dome-marketplace.eu/credentials?transaction_code=transaction_code
+> NOTE: The `power_onboarding` has a single `tmf_action`, `execute`. On the other hand, the `power_product_offering` has multiple `tmf_action`, `create`, `update`, and `delete`.
 
-6. The Employee accesses the Credential Issuer executing the link attached in the received email. (LEAR)
+### CreateLEARCredentialEmployee()
 
-> Protocol explanation: (2) The flow defined in this specification begins as the Credential Issuer generates a Credential Offer for certain Credential(s) and communicates it to the Wallet, for example, as a QR code or as a URI. The Credential Offer contains the Credential Issuer's URL, the information about the Credential(s) being offered, and the Pre-Authorized Code. This step is defined in Section 4.1.
+This is a non-normative example of the request:
 
-7. The Credential Issuer makes a Credential Offer and persists in memory.
+```curl
+POST /api/v1/credentials HTTP/1.1
+Host: issuer.dome-marketplace.eu
+Authorization bearer eyJhbGciOiJSUzI1...NiIsInR5cCI6IkpsHQ
+Content-Type: application/json
 
-> NOTE: The Credential Offer 
+{
+   "credential": {
+      "mandator": {
+            "commonName": "IN2",
+            "country": "ES",
+            "emailAddress": "rrhh@in2.es",
+            "organization": "IN2, Ingeniería de la Información, S.L.",
+            "organizationIdentifier": "VATES-B60645900",
+            "serialNumber": "B60645900"
+      },
+      "mandatee": {
+         "email": "oriol.canades@in2.es",
+         "first_name": "Oriol",
+         "gender": "M",
+         "last_name": "Canadés",
+         "mobile_phone": "+34666336699"
+      },
+      "power": [
+         {
+            "tmf_action": "Execute",
+            "tmf_domain": "DOME",
+            "tmf_function": "Onboarding",
+            "tmf_type": "Domain"
+         },
+         {
+            "tmf_action": [
+               "Create",
+               "Update"
+            ],
+            "tmf_domain": "DOME",
+            "tmf_function": "ProductOffering",
+            "tmf_type": "Domain"
+         }
+      ]
+   }
+}
+```
 
-````json
-    {
-       "credential_issuer": "https://issuer.dome-marketplace.eu",
-       "credential_configuration_ids": [
-          "LEARCredentialEmployee"
-       ],
-       "grants": {
-          "urn:ietf:params:oauth:grant-type:pre-authorized_code": {
-             "pre-authorized_code": "oaKazRN8I0IbtZ0C7JuMn5",
-             "tx_code": {
-                "length": 4,
-                "input_mode": "numeric",
-                "description": "Please provide the one-time code that was sent via e-mail"
-             }
-          }
-       }
-    }
-````
+## 5. Credential Issuer: Credential Details - private - Front, Back
 
-> PROBLEM: ¿Cómo vinculamos la LEARCredentialEmployeeData+TransactionCode con la CredentialOffer?
+This is a non-normative example of the request:
 
+```curl
+GET /api/v1/procedure/{procedure_id}/credentials HTTP/1.1
+Host: issuer.dome-marketplace.eu
+Authorization bearer eyJhbGciOiJSUzI1...NiIsInR5cCI6IkpsHQ
+```
 
-5. The Credential Issuer creates a credential_offer_uri, which points to the Credential Offer made, and it is displayed as a QR code.
+This is a non-normative example of the response:
 
+```curl
+HTTP/1.1 200 OK
+Content-Type: application/json
+Cache-Control: no-store
 
-6. The End-User scans the QR code with the Wallet.
+{
+   "procedure_id: "82ea95d1-4522-47bd-8e05-a1f699cab3a7",
+   "credential_status": "withdrawn",
+   "credential": {...}
+}
+```
 
+> NOTE: The `credential` attribute is the Credential in decoded JSON format.
 
-7. The Wallet reads the QR code content, executes the credential_offer_uri, and retrieves the Credential Offer.
+> NOTE: The mockup has `Sing Credential` and `Revoke` buttons, but these buttons are not implemented in the DOME Profile.
 
-> Protocol explanation: (3) The Wallet uses the Credential Issuer's URL to fetch its metadata, as described in Section 11.2. The Wallet needs the metadata to learn the Credential types and formats that the Credential Issuer supports, and to determine the Token Endpoint (at the OAuth 2.0 Authorization Server) as well as the Credential Endpoint required to start the request.
+> NOTE: The `Send reminder` button will be activated when the `credential_status` attribute is set as `withdrawn` and `pend_donwload`. 
 
-8. The Wallet fetches the Credential Issuer's metadata.
-9. The Wallet fetched the Authorization Server's metadata.
+## 5. Credential Issuer: Credential Offer - public - Front, Back
 
-> Protocol explanation: (5-6) The Wallet sends the Pre-Authorized Code obtained in Step (2) in the Token Request to the Token Endpoint. The Wallet will additionally send a Transaction Code provided by the End-User, if it was required by the Credential Issuer. This step is defined in Section 6.
+> NOTE: Although the mockup shows the credential details, we do not implement it in our solution because it could incur a security risk just because we are exposing the sensitive data in a public context.
 
-> Protocol explanation: (7-8) This step is the same as Step (5) in the Authorization Code Flow. 
-> It is important to note that anyone who possesses a valid Pre-Authorized Code, without further security measures, would be able to receive a VC from the Credential Issuer. Implementers MUST implement mitigations most suitable to the use case. 
-> One such mechanism defined in this specification is the usage of Transaction Codes. The Credential Issuer indicates the usage of Transaction Codes in the Credential Offer and sends the Transaction Code to the End-User via a second channel different than the issuance flow. After the End-User provides the Transaction Code, the Wallet sends the Transaction Code within the Token Request, and the Authorization Server verifies the Transaction Code.
-> (7-8) The Wallet sends a Credential Request to the Credential Issuer's Credential Endpoint with the Access Token and (optionally) the proof of possession of the private key of a key pair to which the Credential Issuer should bind the issued Credential to. Upon successfully validating Access Token and proof, the Credential Issuer returns a Credential in the Credential Response. This step is defined in Section 7.
+### GetCredentialOfferByTransactionCode(transaction_code)
+
+This is a non-normative example of the request:
+
+```curl
+GET /api/v1/credential-offer/{transaction_code} HTTP/1.1
+Host: issuer.dome-marketplace.eu
+```
+
+This is a non-normative example of the response:
+
+```curl
+HTTP/1.1 200 OK
+Content-Type: application/json
+Cache-Control: no-store
+
+{
+   "credential_offer_uri: "https://issuer.dome-marketplace.eu/credentials/1234865"
+}
+```
+
+# Data Lifecycle
+
+## Procedure Lifecycle
+
+```mermaid
+graph TD
+    A[Withdrawn] --> B[Issued]
+    B --> C[Pend. Download]
+    C --> D[Valid]
+    D --> E[Revoked / Expired]
+```
+
+## Credential Lifecycle
+
+```mermaid
+graph TD
+    A[Issued] --> B[Valid]
+    B --> C[Revoked / Expired]
+```
+
+# Security
+
+> NOTE: All the information managed by the frontend application MUST be stored using browser cookies. We MUST NOT store any information in the browser's local storage or session storage.
+
+[//]: # (todo: we need to find some way to verify that any library used in the frontend must not use local storage or session storage to manage application data)
 
