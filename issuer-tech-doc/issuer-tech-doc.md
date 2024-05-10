@@ -47,7 +47,7 @@ authors: Alberto Rubio, Oriol Canadés
   * [Date Format](#date-format)
 * [Credential Issuer - SaaS](#credential-issuer---saas)
   * [1. Credential Issuer: Home Page (landing page) - public - Front](#1-credential-issuer-home-page-landing-page---public---front)
-  * [2. Credential Issuer: Log in | Sign up - public - Front, Auth Server](#2-credential-issuer-log-in--sign-up---public---front-auth-server)
+  * [2. Credential Issuer: Log in or Sign up - public - Front, Auth Server](#2-credential-issuer-log-in-or-sign-up---public---front-auth-server)
   * [3. Credential Issuer: Credential Management - private - Front, Back](#3-credential-issuer-credential-management---private---front-back)
   * [4. Credential Issuer: Create Credential - private - Front, Back](#4-credential-issuer-create-credential---private---front-back)
   * [5. Credential Issuer: Credential Details - private - Front, Back](#5-credential-issuer-credential-details---private---front-back)
@@ -689,7 +689,7 @@ This is a non-normative example of the LEAR Credential Employee:
 
 ![Credential Issuer Mockup](./images/mockup/mockup-home-page.png)
 
-## 2. Credential Issuer: Log in | Sign up - public - Front, Auth Server
+## 2. Credential Issuer: Log in or Sign up - public - Front, Auth Server
 
 ## 3. Credential Issuer: Credential Management - private - Front, Back
 
