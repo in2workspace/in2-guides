@@ -1,9 +1,10 @@
 ---
 layout: page
 title: DOME Issuer Technical Documentation
-version: v0.1.0
-date: 2024-05-08
-editor: Oriol Canadés Díez
+version: v0.1.0-draft1
+date: 2024-05-10
+editor: Oriol Canadés
+authors: Alberto Rubio, Oriol Canadés
 ---
 
 <h1>DOME Issuer Technical Documentation - Draft 1</h1>
@@ -347,7 +348,17 @@ This is a security measure to ensure that the Employee is the one that has recei
    &tx_code=123456
    ```
 
-2. The Credential Issuer validates the Token Request and sends the `Token Response` ([section 6.2](https://dome-marketplace.github.io/OpenID4VCI-DOMEprofile/openid-4-verifiable-credential-issuance-wg-draft.html#name-successful-token-response)) to the Wallet. 
+2. The Credential Issuer validates the Token Request.
+
+3. The Credential Issuer sends the `pre-authorized_code` and the `access_token` to the Credential Issuer.
+
+   > NOTE: We need to find a solution about secure communication between both components.
+
+   [//]: # (todo: consider all the security options about M2M communication)
+
+4. The Credential Issuer gets the `Deferred Credential Metadata` by the `pre-authorized_code` and updates the `auth_server_nonce` with the `access_token`.
+
+5. The Authorization Server sends the `Token Response` ([section 6.2](https://dome-marketplace.github.io/OpenID4VCI-DOMEprofile/openid-4-verifiable-credential-issuance-wg-draft.html#name-successful-token-response)) to the Wallet.
 
 This is a non-normative example of the `Successful Token Response` ([section 6.2](https://dome-marketplace.github.io/OpenID4VCI-DOMEprofile/openid-4-verifiable-credential-issuance-wg-draft.html#name-successful-token-response)):
 
