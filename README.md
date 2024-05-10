@@ -10,3 +10,4 @@ This repository contains the implementation guides for the IN2 Enterprise soluti
 
 # Technical Documents/Specifications
 * [Desmos Technical Document](/desmos-tech-doc/desmos-technical-document.md)
+* [DOME LEAR Credential Issuance Flow](/issuer-tech-doc/issuer-tech-doc.md)
