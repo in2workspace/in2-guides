@@ -163,150 +163,152 @@ The `tx_code` created during the Credential Offer is sent to the Employee via em
 
 1. The Wallet fetches the Credential Offer executing tha parsed `credential_offer_uri`.
 
-This is a non-normative example of the Credential Offer Uri:
-
-```curl
-   GET /credential_offer/84dr684f51jfdbj HTTP/1.1
-   Host: issuer.dome-marketplace.eu
-   https://server.example.com/84dr684f51jfdbj
-```
-```curl
-   HTTP/1.1 200 OK
-   Content-Type: application/json
-   {
-      "credential_issuer": "https://credential-issuer.example.com",
-      "credential_configuration_ids": [
-         "UniversityDegree_LDP_VC"
-      ],
-      "grants": {
-      "urn:ietf:params:oauth:grant-type:pre-authorized_code": {
-         "pre-authorized_code": "adhjhdjajkdkhjhdj",
-         "tx_code": {}
+   This is a non-normative example of the Credential Offer Uri:
+   
+   ```curl
+      GET /credential_offer/84dr684f51jfdbj HTTP/1.1
+      Host: issuer.dome-marketplace.eu
+      https://server.example.com/84dr684f51jfdbj
+   ```
+   ```curl
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+      Accept-Language: en;q=0.8
+      {
+         "credential_issuer": "https://credential-issuer.example.com",
+         "credential_configuration_ids": [
+            "UniversityDegree_LDP_VC"
+         ],
+         "grants": {
+         "urn:ietf:params:oauth:grant-type:pre-authorized_code": {
+            "pre-authorized_code": "adhjhdjajkdkhjhdj",
+            "tx_code": {}
+         }
       }
    }
-}
-```
+   ```
+
+> NOTE: The Credential Offer Response includes the header `Accept-Language` to indicate the language preferred for display. The language(s) in HTTP Accept-Language and Content-Language Headers MUST use the values defined in [RFC3066]. 
+
+> JUSTIFICATION: We do not implement the `Accept-Language` header in the Wallet's Credential Issuer Metadata request.
 
 ## 12. The Wallet fetches the Credential Issuer's Metadata and the Authorization Server's Metadata.
 
 1. The Wallet fetches the Credential Issuer's Metadata ([section 11.2](https://dome-marketplace.github.io/OpenID4VCI-DOMEprofile/openid-4-verifiable-credential-issuance-wg-draft.html#name-credential-issuer-metadata)) creating a dynamic URL using the parameter `credential_issuer` and concatenating the path `/.well-known/openid-credential-issuer`.
 
-> NOTE: The communication with the Issuer Metadata Endpoint MUST use TLS.
-
-> NOTE: The request MUST be an HTTP request using GET method and the URL SHOULD NOT contain any query parameters.
-
-> NOTE: The Credential Issuer MUST return a JSON document compliant with this specification using the application/json media type and the HTTP Status Code 200.
-
-[//]: # (todo: decide which of two option to use)
-> NOTE: The Wallet is RECOMMENDED to send an Accept-Language Header in the HTTP GET request to indicate the language(s) preferred for display. It is up to the Credential Issuer whether to:
->  * send a subset of the metadata containing internationalized display data for one or all of the requested languages and indicate returned languages using the HTTP Content-Language Header, or
->  * ignore the Accept-Language Header and send all supported languages or any chosen subset.
-> 
-> The language(s) in HTTP Accept-Language and Content-Language Headers MUST use the values defined in [RFC3066].
-
-```curl
-GET /.well-known/openid-credential-issuer HTTP/1.1
-Host: issuer.dome-marketplace.eu
-Accept-Language: fr-ch, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5
-```
-
-This is a non-normative example of the Credential Issuer Metadata:
-
-```json
-{
-   "credential_issuer": "https://credential-issuer.example.com",
-   "authorization_servers": [ "https://server.example.com" ],
-   "credential_endpoint": "https://credential-issuer.example.com",
-   "batch_credential_endpoint": "https://credential-issuer.example.com/batch_credential",
-   "deferred_credential_endpoint": "https://credential-issuer.example.com/deferred_credential",
-   "credential_response_encryption": {
-      "alg_values_supported" : [
-         "ECDH-ES"
-      ],
-      "enc_values_supported" : [
-         "A128GCM"
-      ],
-      "encryption_required": false
-   },
-   "display": [
-      {
-         "name": "Example University",
-         "locale": "en-US"
+   > NOTE: The communication with the Issuer Metadata Endpoint MUST use TLS.
+   
+   > NOTE: The request MUST be an HTTP request using GET method and the URL SHOULD NOT contain any query parameters.
+   
+   > NOTE: The Credential Issuer MUST return a JSON document compliant with this specification using the application/json media type and the HTTP Status Code 200.
+   
+   > NOTE: The Credential Issuer Metadata response includes the header `Accept-Language` to indicate the language preferred for display. The language(s) in HTTP Accept-Language and Content-Language Headers MUST use the values defined in [RFC3066].
+   
+   > JUSTIFICATION: We do not implement the `Accept-Language` header in the Wallet's Credential Issuer Metadata request.
+   
+   ```curl
+   GET /.well-known/openid-credential-issuer HTTP/1.1
+   Host: issuer.dome-marketplace.eu
+   Accept-Language: fr-ch, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5
+   ```
+   
+   This is a non-normative example of the Credential Issuer Metadata:
+   
+   ```json
+   {
+      "credential_issuer": "https://credential-issuer.example.com",
+      "authorization_servers": [ "https://server.example.com" ],
+      "credential_endpoint": "https://credential-issuer.example.com",
+      "batch_credential_endpoint": "https://credential-issuer.example.com/batch_credential",
+      "deferred_credential_endpoint": "https://credential-issuer.example.com/deferred_credential",
+      "credential_response_encryption": {
+         "alg_values_supported" : [
+            "ECDH-ES"
+         ],
+         "enc_values_supported" : [
+            "A128GCM"
+         ],
+         "encryption_required": false
       },
-      {
-         "name": "Example Université",
-         "locale": "fr-FR"
-      }
-   ],
-   "credential_configurations_supported": {
-      "UniversityDegreeCredential": {
-         "format": "jwt_vc_json",
-         "scope": "UniversityDegree",
-         "cryptographic_binding_methods_supported": [
-            "did:example"
-         ],
-         "credential_signing_alg_values_supported": [
-            "ES256"
-         ],
-         "credential_definition":{
-            "type": [
-               "VerifiableCredential",
-               "UniversityDegreeCredential"
+      "display": [
+         {
+            "name": "Example University",
+            "locale": "en-US"
+         },
+         {
+            "name": "Example Université",
+            "locale": "fr-FR"
+         }
+      ],
+      "credential_configurations_supported": {
+         "UniversityDegreeCredential": {
+            "format": "jwt_vc_json",
+            "scope": "UniversityDegree",
+            "cryptographic_binding_methods_supported": [
+               "did:example"
             ],
-            "credentialSubject": {
-               "given_name": {
-                  "display": [
-                     {
-                        "name": "Given Name",
-                        "locale": "en-US"
-                     }
-                  ]
-               },
-               "family_name": {
-                  "display": [
-                     {
-                        "name": "Surname",
-                        "locale": "en-US"
-                     }
-                  ]
-               },
-               "degree": {},
-               "gpa": {
-                  "display": [
-                     {
-                        "name": "GPA"
-                     }
+            "credential_signing_alg_values_supported": [
+               "ES256"
+            ],
+            "credential_definition":{
+               "type": [
+                  "VerifiableCredential",
+                  "UniversityDegreeCredential"
+               ],
+               "credentialSubject": {
+                  "given_name": {
+                     "display": [
+                        {
+                           "name": "Given Name",
+                           "locale": "en-US"
+                        }
+                     ]
+                  },
+                  "family_name": {
+                     "display": [
+                        {
+                           "name": "Surname",
+                           "locale": "en-US"
+                        }
+                     ]
+                  },
+                  "degree": {},
+                  "gpa": {
+                     "display": [
+                        {
+                           "name": "GPA"
+                        }
+                     ]
+                  }
+               }
+            },
+            "proof_types_supported": {
+               "jwt": {
+                  "proof_signing_alg_values_supported": [
+                     "ES256"
                   ]
                }
-            }
-         },
-         "proof_types_supported": {
-            "jwt": {
-               "proof_signing_alg_values_supported": [
-                  "ES256"
-               ]
-            }
-         },
-         "display": [
-            {
-               "name": "University Credential",
-               "locale": "en-US",
-               "logo": {
-                  "url": "https://university.example.edu/public/logo.png",
-                  "alt_text": "a square logo of a university"
-               },
-               "background_color": "#12107c",
-               "text_color": "#FFFFFF"
-            }
-         ]
+            },
+            "display": [
+               {
+                  "name": "University Credential",
+                  "locale": "en-US",
+                  "logo": {
+                     "url": "https://university.example.edu/public/logo.png",
+                     "alt_text": "a square logo of a university"
+                  },
+                  "background_color": "#12107c",
+                  "text_color": "#FFFFFF"
+               }
+            ]
+         }
       }
    }
-}
-```
+   ```
 
 2. The Wallet fetches the Authorization Server's Metadata ([section 11.3](https://dome-marketplace.github.io/OpenID4VCI-DOMEprofile/openid-4-verifiable-credential-issuance-wg-draft.html#name-oauth-20-authorization-serv)) creating a dynamic URL using the parameter `credential_issuer` and concatenating the path `/.well-known/openid-configuration`.
 
-> NOTE: The Credential Issuer Metadata is offered by the Keycloak Plugin and the Authorization Server Metadata is offered by the Keycloak. Both are part of the same system.
+   > NOTE: The Credential Issuer Metadata is offered by the Keycloak Plugin and the Authorization Server Metadata is offered by the Keycloak. Both are part of the same system.
 
 ## 13. The Employee interacts with the Wallet adding the tx_code received in the email.
 
@@ -379,7 +381,7 @@ Cache-Control: no-store
 [//]: # (todo: add the detailed flow)
    1. The Wallet creates a did:key to the Employee. This means the creation of a key pair, generating a DID, and storing the private key in a secure enclave such as HashiCorp Vault. 
 2. The Wallet creates a `proof` 
-3. The Wallet sends a Credential Request to the Credential Issuer's Credential Endpoint with the Access Token and the proof of possession of the private key of a key pair to which the Credential Issuer should bind the issued Credential to.
+3. The Wallet sends a Credential Request to the Credential Issuer's Credential Endpoint with the Access Token and the proof. This proof is the proof of possession of the private key of a key pair to which the Credential Issuer should bind the issued Credential to.
 
 
 ## 16. The Credential Issuer sends and emails to the HR Employee or Legal Representative to notify they have a new credential pending to be signed.
