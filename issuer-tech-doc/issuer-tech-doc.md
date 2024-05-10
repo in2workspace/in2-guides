@@ -73,44 +73,53 @@ This is an overview of the flow. The following sections will explain in detail e
 1. The HR Employee or Legal Representative accesses the Credential Issuer Portal using a web browser.
 2. The Credential Issuer Portal shows the Home Page with the option to log in.
 3. The HR Employee or Legal Representative clicks on the `Log in | Sing up` button.
-4. The Credential Issuer redirects the HR Employee or Legal Representative to the Authorization Server, *a Keycloak implementation*.
+4. The Credential Issuer redirects the HR Employee or Legal Representative to the Authorization Server.
 
 ## 2. The HR Employee or Legal Representative logs in to the Credential Issuer Portal using their Digital Certificate.
 
 1. The Authorization Server request to the browser to attach a Digital Certificate which will be used to log in or sign up.
-2. The HR Employee or Legal Representative selects the Digital Certificate.
-3. The Authorization Server validates the Digital Certificate.
-   1. If the Digital Certificate is valid and is associated with a valid registered user, the Authorization Server redirects the HR Employee or Legal Representative to the Credential Issuer Portal.
+2. The HR Employee or Legal Representative selects a Digital Certificate from the browser.
+3. The Authorization Server validates the Digital Certificate:
+   1. If the Digital Certificate is valid and is associated with a valid registered user, the Authorization Server logs in and redirects the HR Employee or Legal Representative to the Credential Issuer Portal.
    2. If the Digital Certificate is not valid, the Authorization Server shows an error message to the HR Employee or Legal Representative.
-   3. If the Digital Certificate is valid but is not associated with a valid registered user, the Authorization Server starts the registration process for the HR Employee or Legal Representative. The registration process must include the validation of the Digital Certificate and the email address of the HR Employee or Legal Representative. 
+   3. If the Digital Certificate is valid but is not associated with a valid registered user, the Authorization Server starts the registration process for the HR Employee or Legal Representative. The registration process must include the validation of the Digital Certificate and the verification of the HR Employee or Legal Representative's email address. 
       1. If the Digital Certificate does not include the email address, the Authorization Server must request the email address to the HR Employee or Legal Representative.
       2. If the email address is already registered, the Authorization Server must show an error message to the HR Employee or Legal Representative. 
-      3. If the email address is verified, the Authorization Server creates a new user and redirects the HR Employee or Legal Representative to the Credential Issuer Portal.
+      3. If the email address is verified, the Authorization Server updates the status of the user to a valid status.
+      4. If the HR Employee or Legal Representative tries to log in but the email address is not verified, the Authorization Server must show an error message to the HR Employee or Legal Representative.
+      5. If the HR Employee or Legal Representative tries to log in and the email address is verified, and the Digital Certificate is valid, the Authorization Server logs in and redirects the HR Employee or Legal Representative to the Credential Issuer Portal.
 
 ## 3. The HR Employee or Legal Representative registers a new LEAR Credential for a specific Employee of their organization using a form.
 
-1. The Credential Issuer shows a form to the HR Employee or Legal Representative to register a new LEAR Credential Employee. The data related to the `Mandator` (HR Employee or Legal Representative) is pre-filled using the data from the Digital Certificate.
-2. The HR Employee or Legal Representative fills the form with the data of the Employee - `Mandatee` - that will receive the LEAR Credential.
-3. The HR Employee or Legal Representative sets the powers of representation that the Employee will have, for now `Onboarding` and `Product Offering`.
-4. The HR Employee or Legal Representative clicks on the button *Register LEAR Credential*.
-5. The Credential Issuer validates the data and creates a new LEAR Credential Employee. This LEAR Credential Employee has the final format, but the Cryptographic Binding is not set and the credential is not signed yet. 
-6. The Credential Issuer creates a new `Credential Procedure`. The Credential Procedure is in the status "WITHDRAWN" and has the Credential (*decoded - json format*).
-7. The Credential Issuer creates a new `Deferred Credential Metadata`. It includes the Transaction Code, as `transaction_code`, and the id of the Credential Procedure, `procedure_id`. This Transaction Code is a nonce that will be used to bind the Credential Offer with the Credential Request and to create the URI that will be sent to the Employee via email.
+> NOTE: A non-normative example of the LEAR Credential Employee could be found in the [Data Model - LEAR Credential Employee](#lear-credential-employee) section.
 
+1. The Credential Issuer shows a form to the HR Employee or Legal Representative to register a new LEAR Credential Employee. The data related to the `Mandator` (HR Employee or Legal Representative) is pre-filled using the data from the Digital Certificate.
+2. The HR Employee or Legal Representative fills `Mandatee` section with the data of the Employee that will receive the LEAR Credential using the form.
+3. The HR Employee or Legal Representative sets the powers of representation that the Employee will have, for now `Onboarding` and `Product Offering`, but many others could be added in the future.
+   > NOTE: Not each LEAR Credential Employee needs to set all the powers of representation. The HR Employee or Legal Representative can set the powers of representation that the Employee will have and then, set the actions related to that power.
+4. The HR Employee or Legal Representative clicks on the `Create Credential` button.
+5. The Credential Issuer validates the data and creates a new LEAR Credential Employee. 
+   > NOTE: This LEAR Credential Employee has the final format, but the Cryptographic Binding is not set and the credential is not signed yet.
+6. The Credential Issuer creates a new `Credential Procedure` entity. The Credential Procedure is in the status `WITHDRAWN` and sets the attribute `credential_decoded` with the Credential received.
+   > NOTE: The Credential Procedure is a way to manage the Credential Issuance process. It includes the Credential, the status of the Credential Issuance, and the organization identifier, etc. You can find more information about the Credential Procedure in the [Data Model - Credential Procedure](#credential-procedure) section.
+7. The Credential Issuer creates a new `Deferred Credential Metadata`. It includes the Transaction Code, as `transaction_code`, and the id of the Credential Procedure, `procedure_id`. This Transaction Code is a nonce that will be used to bind the Credential Offer with the Credential Request and to create the URI that will be sent to the Employee via email.
+   > NOTE: The Deferred Credential Metadata is a way to manage the metadata needed to manage the deferred process. It includes the Transaction Code, the Credential Procedure id, etc. You can find more information about the Deferred Credential Metadata in the [Data Model - Deferred Credential Metadata](#deferred-credential-metadata) section.
+   
 ## 4. The Credential Issuer notifies the Employee with the link needed to start the credential issuance process.
 
-1. When the Credential Issuer finishes the registration of the LEAR Credential Employee, it sends an email to the Employee with the link to start the credential issuance process. The link includes the Transaction Code as a query parameter.
+1. When the Credential Issuer finishes the registration of the LEAR Credential Employee, it sends an email to the Employee with the link to start the credential issuance process. The link includes the Transaction Code as a query parameter. This is a non-normative example of the link that the Employee will receive:
 
-This is a non-normative example of the link that the Employee will receive:
+   ```text
+    https://issuer.dome-marketplace.eu/credentials?transaction_code=oaKazRN8I0IbtZ0C7JuMn5
+   ```
 
-```text
- https://issuer.dome-marketplace.eu/credentials?transaction_code=oaKazRN8I0IbtZ0C7JuMn5
-```
+   > NOTE: The Credential Issuer sends the email using an SMTP server. The email includes a template with the link to start the credential issuance process and short but descriptive documentation about the process that the employee will follow. The email is sent to the email address of the Employee that was set in the LEAR Credential Employee form.
 
 ## 5. The Employee accesses the Credential Issuer executing the link attached in the received email.
 
 1. The Employee reads the email and clicks on the link to start the process of receiving the LEAR Credential.
-2. The Employee is redirected to the Credential Issuer Portal.
+2. The Employee is redirected to the **Credential Offer Page** in the Credential Issuer Portal.
+   > NOTE: You can find a mockup of the Credential Offer Page in the [Credential Issuer: Credential Offer Page](#5-credential-issuer-credential-offer---public---front-back) section.
 3. The Credential Issuer validates the `transaction_code` and retrieves the `Credential Procedure`.
 
 ## 6. The Credential Issuer makes a Credential Offer and updates the Deferred Credential Metadata.
@@ -584,11 +593,47 @@ This is a non-normative example of the LEAR Credential Employee:
 # Credential Issuer - SaaS
 
 ## 1. Credential Issuer: Home Page (landing page) - public - Front
+
+![Credential Issuer Mockup](./images/mockup/mockup-home-page.png)
+
 ## 2. Credential Issuer: Log in | Sign up - public - Front, Auth Server
+
 ## 3. Credential Issuer: Credential Management - private - Front, Back
+
+![Credential Management Mockup](./images/mockup/mockup-credential-management-page.png)
+
 ## 4. Credential Issuer: Create Credential - private - Front, Back
+
+![Create Credential Mockup](./images/mockup/mockup-create-credential-page.png)
+
+![Create Credential Mockup](./images/mockup/mockup-create-credential-page-2.png)
+
 ## 5. Credential Issuer: Credential Offer - public - Front, Back
+
+![Credential Offer Mockup](./images/mockup/mockup-credential-offer-page.png)
+
 ## 6. Credential Wallet: Credentials Page - private - Front, Back
+
+![Wallet Credentials Page Mockup](./images/mockup/mockup-wallet-credential-page.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 2 Issuer: Log in | Sign up
 
