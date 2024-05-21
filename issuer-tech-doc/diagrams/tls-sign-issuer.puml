@@ -1,0 +1,23 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+participant "Local Signature" as local_signature
+
+box "Credential Issuer"
+    participant "nginx" as nginx
+    participant "Keycloak" as keycloak
+    participant "Credential Issuer" as credential_issuer
+    database "Database" as c_database
+end box
+
+local_signature -> nginx++: GET /api/v1/pending-credential
+nginx <--> local_signature: Request Client Certificate
+nginx --> nginx: Set proxy_set_header
+nginx -> credential_issuer--++: Forward Request
+credential_issuer -> keycloak: Verify Client Certificate
+credential_issuer -> c_database: Get pending credentials\nby Client (organization)
+credential_issuer --> local_signature--: Return pending credential
+
+@enduml

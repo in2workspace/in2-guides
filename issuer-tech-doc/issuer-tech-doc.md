@@ -1,8 +1,8 @@
 ---
 layout: page
 title: DOME Issuer Technical Documentation
-version: v0.1.0-draft1
-date: 2024-05-10
+version: v0.1.1-draft1
+date: 2024-05-21
 editor: Oriol Canadés
 authors: Alberto Rubio, Oriol Canadés
 ---
@@ -766,7 +766,7 @@ Cache-Control: no-store
 This is a non-normative example of the request:
 
 ```curl
-POST /api/v1/credentials HTTP/1.1
+POST /api/v1/credentials?type="credential_type" HTTP/1.1
 Host: issuer.dome-marketplace.eu
 Authorization bearer eyJhbGciOiJSUzI1...NiIsInR5cCI6IkpsHQ
 Content-Type: application/json

@@ -1,14 +1,15 @@
 ---
 layout: page
-title: "Desmos: Blockchain Connector Technical Document"
+title: "DOME Access Node: Data Sync"
 date: 2024-04-16
 version: v1.0.0
 editor: "Oriol Canadés"
+author: "IN2, Ingeniería de la Información"
 ---
 
 ![IN2, Ingeniería de la Información](../assets/images/in2-logo.png)
 
-<h1>Desmos: Blockchain Connector Technical Document— <i>Draft 1</i></h1>
+<h1>DOME Access Node: Data Sync — <i>Draft 1</i></h1>
 
 <h2>Table of Contents</h2>
 <!-- TOC -->
@@ -23,25 +24,25 @@ editor: "Oriol Canadés"
     * [2. Subscriptions Setup](#2-subscriptions-setup)
       * [2.1 Broker Subscription](#21-broker-subscription)
       * [2.2 DLT Subscription](#22-dlt-subscription)
-* [Use Case 2 — Data Synchronization](#use-case-2--data-synchronization)
-  + [1.Introduction](#1introduction)
-  + [2. Data Synchronization Process](#2-data-synchronization-process)
-    * [2.1. Triggering Data Synchronization](#21-triggering-data-synchronization)
-    * [2.2. P2PDataSyncJob](#22-p2pdatasyncjob)
-      * [2.2.1. Data Synchronization](#221-data-synchronization)
-        * [2.2.2.1. Peer Discovery](#2211-peer-discovery)
-        * [2.2.2.2. Set Connection](#2212-set-connection)
-        * [2.2.2.3. Data Negotiation](#2213-data-negotiation)   
-        * [2.2.2.4. Data Transfer](#2214-data-transfer)  
-        * [2.2.2.5. Data Verification](#2215-data-verification)  
-        * [2.2.2.6. Closing connection](#2216-closing-connection)
-        * [2.2.2.7. Completion](#2217-completion)
-      * [2.2.2. Discovery Synchronization](#221-data-synchronization) 
-          * [2.2.2.1. Data Negotiation](#2221-data-negotiation)
-            * [2.2.2.1.1. Data Negotiation](#22211-data-negotiation-event)
-          * [2.2.2.2. Data Transfer](#2222-data-transfer)
-          * [2.2.2.3. Data Verification](#2223-data-verification) 
-      * [2.2.3. Entities Synchronization](#223-entities-synchronization) 
+  * [Use Case 2 — Data Synchronization](#use-case-2--data-synchronization)
+    * [1.Introduction](#1introduction)
+    * [2. Data Synchronization Process](#2-data-synchronization-process)
+      * [2.1. Triggering Data Synchronization](#21-triggering-data-synchronization)
+      * [2.2. P2PDataSyncJob](#22-p2pdatasyncjob)
+        * [2.2.1. Data Synchronization](#221-data-synchronization)
+          * [2.2.1.1. Peer Discovery](#2211-peer-discovery)
+          * [2.2.1.2. Set Connection](#2212-set-connection)
+          * [2.2.1.3. Data Negotiation](#2213-data-negotiation)
+          * [2.2.1.4. Data Transfer](#2214-data-transfer)
+          * [2.2.1.5. Data Verification](#2215-data-verification)
+          * [2.2.1.6. Closing connection](#2216-closing-connection)
+          * [2.2.1.7. Completion](#2217-completion)
+        * [2.2.2. Discovery Synchronization](#222-discovery-synchronization)
+          * [2.2.2.1 Data Negotiation](#2221-data-negotiation)
+          * [2.2.2.1.1 Data Negotiation Event](#22211-data-negotiation-event)
+          * [2.2.2.2 Data Transfer](#2222-data-transfer)
+          * [2.2.2.3. Data Verification](#2223-data-verification)
+        * [2.2.3. Entities Synchronization](#223-entities-synchronization)
   * [Use Case 3 — Publisher: Create and publish data to the blockchain](#use-case-3--publisher-create-and-publish-data-to-the-blockchain)
     * [1. Receiving the Broker Notification](#1-receiving-the-broker-notification)
     * [2. Building the data object to be published](#2-building-the-data-object-to-be-published)
@@ -62,10 +63,21 @@ editor: "Oriol Canadés"
 * [Resources](#resources)
 <!-- TOC -->
 
-
-<div style="page-break-before: always;"></div>
-
 # Introduction
+
+The DOME Project is a distributed and decentralized project. The DOME ecosystem is composed of different participants, 
+such as the DOME Platform, the federated Marketplaces and the Service Providers.
+
+The DOME Access Node is a component of the DOME ecosystem that is responsible for federating data between the different
+participants. 
+
+In this document, we will focus on the Data Synchronization process of the DOME Access Node bearing in mind the different 
+use cases in which the process is involved.
+
+## Overview
+
+
+
 
 Desmos is a comercial name for a Blockchain Connector solution. It is responsible for publishing and retrieving all change-events for the Participant from the Blockchain.
 
