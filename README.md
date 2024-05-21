@@ -9,5 +9,5 @@ This repository contains the implementation guides for the IN2 Enterprise soluti
 * [IN2 Wallet Guide](/wallet-guide/wallet-guide.md)
 
 # Technical Documents/Specifications
-* [Desmos Technical Document](/desmos-tech-doc/desmos-technical-document.md)
-* [DOME LEAR Credential Issuance Flow](/issuer-tech-doc/issuer-tech-doc.md)
+* [DOME Access Node: Data Sync - *Draft 1*](/dome-access-tech-docs/data-sync/dome-access-node-data-sync-tech-doc.md)
+* [DOME LEAR Credential Issuance Flow - *Draft 1*](/issuer-tech-doc/issuer-tech-doc.md)
