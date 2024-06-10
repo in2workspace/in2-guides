@@ -6,7 +6,6 @@ This repository contains the implementation guides for the IN2 Enterprise soluti
 
 # Guides
 * [Desmos Guide](/desmos-guide/desmos-guide.md)
-* [IN2 Wallet Guide](/wallet-guide/wallet-guide.md)
 
 # Technical Documents/Specifications
 * [DOME Access Node: Data Sync - *Draft 1*](/dome-access-tech-docs/data-sync/dome-access-node-data-sync-tech-doc.md)
