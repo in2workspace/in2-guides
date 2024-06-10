@@ -1,41 +1,6 @@
 ![IN2, Ingeniería de la Información](../assets/images/in2-logo.png)
 
-<html lang="en">
-  <head>
-    <!-- Style for the header, you can add your own CSS file or style tag here -->
-    <title>wallet-guide-draft-1</title>
-  </head>
-  <body>
-    <div class="header">
-      <div class="header-content">
-        <h1>IN2 Wallet Guide - Draft 1</h1>
-        <table>
-          <tr>
-            <th>Workgroup:</th>
-            <td>dome</td>
-          </tr>
-          <tr>
-            <th>Published:</th>
-            <td>21 February 2024</td>
-          </tr>
-          <tr>
-            <th>Editor:</th>
-            <td>
-              <a href="mailto:oriol.canades@in2.es">Oriol Canadés</a>
-            </td>
-          </tr>
-          <tr>
-            <th>Authors:</th>
-            <td>
-              <a href="mailto:in2kizuna@gmail.com">IN2 Kizuna DevTeam</a>
-            </td>
-          </tr>
-          <!-- Add more rows as needed -->
-        </table>
-      </div>
-    </div>
-  </body>
-</html>
+# deprecated --> new guide: https://github.com/DOME-Marketplace/onboarding/tree/onboarding-guide
 
 # Wallet Guide
 
